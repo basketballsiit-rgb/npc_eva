@@ -17,6 +17,6 @@ fi
 echo "=== 2. Deploying Frontend ==="
 cd ../frontend
 npm install
-npm run build
+VITE_API_URL=/npc_eva_backend npm run build
 
 echo "=== Deployment Completed Successfully ==="
