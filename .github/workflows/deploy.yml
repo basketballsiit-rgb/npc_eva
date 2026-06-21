@@ -15,8 +15,16 @@ jobs:
         host: ${{ secrets.SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
-        # Run the deployment script inside the project directory on the server
+        password: ${{ secrets.SERVER_PASSWORD }} # Fallback to password authentication if key fails
+        # Run deployment script (clones if directory does not exist)
         script: |
+          if [ ! -d "/var/www/npc_eva" ]; then
+            echo "Directory /var/www/npc_eva does not exist. Creating and cloning..."
+            sudo mkdir -p /var/www/npc_eva
+            sudo chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} /var/www/npc_eva || sudo chown -R $USER:$USER /var/www/npc_eva
+            git clone https://github.com/basketballsiit-rgb/npc_eva.git /var/www/npc_eva
+          fi
           cd /var/www/npc_eva
           chmod +x deploy.sh
           ./deploy.sh
+
