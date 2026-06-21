@@ -25,6 +25,8 @@ jobs:
             git clone https://github.com/basketballsiit-rgb/npc_eva.git /var/www/npc_eva
           fi
           cd /var/www/npc_eva
+          git fetch origin main
+          git reset --hard origin/main
           chmod +x deploy.sh
           ./deploy.sh
 
