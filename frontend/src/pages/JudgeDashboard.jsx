@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { api } from '../utils/api';
+import { api, getUploadUrl } from '../utils/api';
 import Swal from 'sweetalert2';
 import { 
   LogOut, ClipboardList, History, Award, BookOpen, 
@@ -530,7 +530,7 @@ const JudgeDashboard = () => {
                                 )}
                                 {part.attachment_url && (
                                   <a
-                                    href={part.attachment_url}
+                                    href={getUploadUrl(part.attachment_url)}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-[9px] text-success font-bold bg-success/5 border border-success/10 px-1.5 py-0.5 rounded"
@@ -630,16 +630,16 @@ const JudgeDashboard = () => {
                           🔗 ลิงก์ผลงานประกวด
                         </a>
                       )}
-                      {selectedParticipant.attachment_url && (
-                        <a
-                          href={selectedParticipant.attachment_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-success hover:underline flex items-center gap-1 font-bold bg-success/5 border border-success/10 px-3 py-1 rounded-full"
-                        >
-                          📁 ดาวน์โหลดไฟล์แนบ
-                        </a>
-                      )}
+                       {selectedParticipant.attachment_url && (
+                         <a
+                           href={getUploadUrl(selectedParticipant.attachment_url)}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="text-xs text-success hover:underline flex items-center gap-1 font-bold bg-success/5 border border-success/10 px-3 py-1 rounded-full"
+                         >
+                           📁 ดาวน์โหลดไฟล์แนบ
+                         </a>
+                       )}
                     </div>
                   )}
                 </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { api } from '../utils/api';
+import { api, getUploadUrl } from '../utils/api';
 import Swal from 'sweetalert2';
 import { ArrowLeft, Printer } from 'lucide-react';
 
@@ -101,7 +101,7 @@ const PrintReport = () => {
           <div className="flex justify-center mb-4">
             {system_settings?.institution_logo ? (
               <img 
-                src={system_settings.institution_logo} 
+                src={getUploadUrl(system_settings.institution_logo)} 
                 alt="Institution Logo" 
                 className="h-20 w-auto object-contain"
               />

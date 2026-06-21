@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { api } from '../utils/api';
+import { api, getUploadUrl } from '../utils/api';
 import Swal from 'sweetalert2';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -1535,7 +1535,7 @@ const AdminDashboard = () => {
                       {systemSettings.institution_logo ? (
                         <div className="relative group shrink-0">
                           <img
-                            src={systemSettings.institution_logo}
+                            src={getUploadUrl(systemSettings.institution_logo)}
                             alt="Institution Logo"
                             className="w-24 h-24 object-contain rounded-lg border bg-white p-1"
                           />
@@ -2292,7 +2292,7 @@ const AdminDashboard = () => {
                         ) : activityForm.logo_url ? (
                           <div className="flex items-center space-x-3 p-2 bg-gray-50 border rounded-lg h-24">
                             <img
-                              src={activityForm.logo_url}
+                              src={getUploadUrl(activityForm.logo_url)}
                               alt="Activity Logo"
                               className="w-16 h-16 object-contain rounded border bg-white p-1"
                             />
@@ -2340,7 +2340,7 @@ const AdminDashboard = () => {
                         ) : activityForm.login_config.banner_url ? (
                           <div className="flex items-center space-x-3 p-2 bg-gray-50 border rounded-lg h-24">
                             <img 
-                              src={activityForm.login_config.banner_url} 
+                              src={getUploadUrl(activityForm.login_config.banner_url)} 
                               alt="Banner Preview" 
                               className="w-20 h-16 object-cover rounded border bg-white" 
                             />
@@ -2514,13 +2514,13 @@ const AdminDashboard = () => {
                         className="w-full h-96 rounded-xl border shadow-inner relative overflow-hidden bg-gradient-to-br from-[#1a1230] via-[#351F4F] to-[#120a22] text-white p-4 flex flex-col justify-between"
                         style={activityForm.login_config.banner_url ? (
                           activityForm.login_config.template === 'template_2' ? {
-                            backgroundImage: `url(${activityForm.login_config.banner_url})`,
+                            backgroundImage: `url(${getUploadUrl(activityForm.login_config.banner_url)})`,
                             backgroundSize: 'contain',
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'center',
                             backgroundColor: '#120a22'
                           } : {
-                            backgroundImage: `linear-gradient(rgba(26, 18, 48, 0.85), rgba(18, 10, 34, 0.9)), url(${activityForm.login_config.banner_url})`,
+                            backgroundImage: `linear-gradient(rgba(26, 18, 48, 0.85), rgba(18, 10, 34, 0.9)), url(${getUploadUrl(activityForm.login_config.banner_url)})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center'
                           }

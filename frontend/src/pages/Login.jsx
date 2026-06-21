@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { api } from '../utils/api';
+import { api, getUploadUrl } from '../utils/api';
 import Swal from 'sweetalert2';
 import { Shield, Lock, User, Eye, EyeOff, Calendar, MapPin, Award } from 'lucide-react';
 
@@ -97,8 +97,8 @@ const Login = () => {
   }
 
   const isTemplate2 = loginConfig.template === 'template_2';
-  const logoUrls = (loginConfig.logo_urls || []).filter(url => url && url.trim().length > 0);
-  const bannerUrl = loginConfig.banner_url || activityInfo?.banner_url;
+  const logoUrls = (loginConfig.logo_urls || []).filter(url => url && url.trim().length > 0).map(getUploadUrl);
+  const bannerUrl = getUploadUrl(loginConfig.banner_url || activityInfo?.banner_url);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row font-sans">
@@ -158,7 +158,7 @@ const Login = () => {
               ) : activityInfo?.system_settings?.institution_logo ? (
                 <div className="w-full flex justify-center mb-6">
                   <img 
-                    src={activityInfo.system_settings.institution_logo} 
+                    src={getUploadUrl(activityInfo.system_settings.institution_logo)} 
                     alt="Institution Logo" 
                     className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-lg rounded-xl bg-white p-2 border border-white/10"
                   />
@@ -166,7 +166,7 @@ const Login = () => {
               ) : activityInfo?.logo_url ? (
                 <div className="w-full flex justify-center mb-6">
                   <img 
-                    src={activityInfo.logo_url} 
+                    src={getUploadUrl(activityInfo.logo_url)} 
                     alt="Logo" 
                     className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-lg rounded-full bg-white/5 p-2 border border-white/10"
                   />

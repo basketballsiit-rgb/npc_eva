@@ -57,4 +57,13 @@ export const api = {
     return data;
   }
 };
+export const getUploadUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/api/uploads')) {
+    return `${API_URL}${url}`;
+  }
+  return url;
+};
+
 export default api;
