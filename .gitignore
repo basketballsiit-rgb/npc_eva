@@ -37,3 +37,7 @@ backend/uploads/
 # Temporary files
 *.tmp
 *.swp
+
+# Auto-push script (local utility)
+auto_push.js
+
