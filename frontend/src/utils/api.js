@@ -1,4 +1,5 @@
-const API_URL = ''; // Relative path, Vite proxy redirects this to http://localhost:5000
+const API_URL = import.meta.env.VITE_API_URL || ''; // Supports custom production API endpoint, defaults to relative proxy
+
 
 const request = async (method, path, body = null) => {
   const token = localStorage.getItem('npc_token');
