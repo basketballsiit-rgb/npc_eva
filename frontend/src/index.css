@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Load local TH Sarabun PSK or fallback to web Sarabun */
+  @font-face {
+    font-family: 'TH Sarabun PSK';
+    src: local('TH Sarabun PSK'), local('THSarabunPSK');
+    font-weight: normal;
+    font-style: normal;
+  }
+}
+
+/* Hide print elements by default on screen */
+.print-only {
+  display: none;
+}
+
+/* Print CSS Configurations */
+@media print {
+  /* Hide standard screen elements */
+  .no-print, 
+  nav, 
+  sidebar, 
+  header, 
+  button,
+  .swal2-container {
+    display: none !important;
+  }
+
+  /* Show only printable elements */
+  .print-only {
+    display: block !important;
+  }
+
+  body, html {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
+    font-size: 16pt !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Sarabun heading size for print titles */
+  .printable-document h1,
+  .printable-document h2,
+  .print-heading {
+    font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
+    font-size: 18pt !important;
+    font-weight: bold !important;
+  }
+
+  /* All other text inside the document */
+  .printable-document p,
+  .printable-document span,
+  .printable-document div,
+  .printable-document td,
+  .printable-document th {
+    font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
+    font-size: 16pt !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 2cm 1.5cm 2cm 1.5cm;
+  }
+
+  /* Reset document container margins and paddings for printing */
+  .printable-document {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    min-height: 0 !important;
+  }
+
+  /* Keep table borders visible in black and white */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    color: #000000 !important;
+  }
+
+  th, td {
+    border: 1px solid #000000 !important;
+    padding: 4px 6px !important;
+    text-align: center !important;
+  }
+
+  th {
+    background-color: #f2f2f2 !important;
+    font-weight: bold !important;
+  }
+
+  /* Force page breaks cleanly */
+  .page-break {
+    page-break-before: always;
+  }
+}
+
+/* Micro-animations and custom effects for dynamic feeling */
+.hover-scale {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.hover-scale:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
