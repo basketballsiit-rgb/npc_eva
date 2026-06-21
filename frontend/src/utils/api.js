@@ -45,7 +45,7 @@ export const api = {
     const formData = new FormData();
     formData.append('image', file);
 
-    const response = await fetch(path, {
+    const response = await fetch(`${API_URL}${path}`, {
       method: 'POST',
       headers,
       body: formData
