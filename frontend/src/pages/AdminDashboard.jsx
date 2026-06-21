@@ -1708,7 +1708,7 @@ const AdminDashboard = () => {
                                         </a>
                                       )}
                                       {row.attachment_url && (
-                                        <a href={row.attachment_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-success bg-success/5 border border-success/10 px-2 py-0.5 rounded-full font-bold">
+                                        <a href={getUploadUrl(row.attachment_url)} target="_blank" rel="noopener noreferrer" className="text-[10px] text-success bg-success/5 border border-success/10 px-2 py-0.5 rounded-full font-bold">
                                           📁 ไฟล์แนบ
                                         </a>
                                       )}
@@ -2418,7 +2418,7 @@ const AdminDashboard = () => {
                                   ) : currentVal ? (
                                     <div className="flex items-center space-x-2 bg-white p-1 rounded-lg border">
                                       <img 
-                                        src={currentVal} 
+                                        src={getUploadUrl(currentVal)} 
                                         alt={`Logo ${index + 1}`} 
                                         className="w-10 h-10 object-contain rounded bg-gray-50 p-0.5 border" 
                                       />
@@ -2548,7 +2548,7 @@ const AdminDashboard = () => {
                             <div className="flex flex-wrap justify-center gap-1.5 mb-3 max-w-full">
                               {((activityForm.login_config.logo_urls || []).filter(url => url && typeof url === 'string' && url.trim().length > 0).length > 0) ? (
                                 (activityForm.login_config.logo_urls || []).filter(url => url && typeof url === 'string' && url.trim().length > 0).map((url, idx) => (
-                                  <img key={idx} src={url} alt="logo preview" className="w-8 h-8 object-contain rounded-full bg-white/10 p-0.5 border border-white/20" />
+                                  <img key={idx} src={getUploadUrl(url)} alt="logo preview" className="w-8 h-8 object-contain rounded-full bg-white/10 p-0.5 border border-white/20" />
                                 ))
                               ) : (
                                 // SVG Default circle preview
@@ -2853,7 +2853,7 @@ const AdminDashboard = () => {
                               )}
                               {part.attachment_url && (
                                 <a
-                                  href={part.attachment_url}
+                                  href={getUploadUrl(part.attachment_url)}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-[10px] text-success hover:underline flex items-center gap-1 font-bold bg-success/5 border border-success/10 px-2 py-0.5 rounded-full"
@@ -2960,7 +2960,7 @@ const AdminDashboard = () => {
                                       </a>
                                     )}
                                     {row.attachment_url && (
-                                      <a href={row.attachment_url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-success bg-success/5 border border-success/10 px-1.5 py-0.5 rounded font-bold">
+                                      <a href={getUploadUrl(row.attachment_url)} target="_blank" rel="noopener noreferrer" className="text-[9px] text-success bg-success/5 border border-success/10 px-1.5 py-0.5 rounded font-bold">
                                         📁 ไฟล์แนบ
                                       </a>
                                     )}
