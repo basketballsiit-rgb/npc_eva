@@ -19,4 +19,12 @@ cd ../frontend
 npm install
 VITE_API_URL=/npc_eva_backend npm run build
 
+echo "=== 3. Generating Debug Info ==="
+sudo cat /etc/nginx/nginx.conf > dist/nginx_conf_debug.txt
+if [ -d "/etc/nginx/conf.d" ]; then
+  sudo cat /etc/nginx/conf.d/* >> dist/nginx_conf_debug.txt 2>/dev/null || true
+fi
+ls -la dist > dist/dist_debug.txt
+cat dist/index.html > dist/index_html_debug.txt
+
 echo "=== Deployment Completed Successfully ==="
