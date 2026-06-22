@@ -979,13 +979,13 @@ const AdminDashboard = () => {
         root.innerHTML = `
           <div style="text-align:center;padding:8px 0;">
             <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:12px;padding:16px 20px;margin-bottom:20px;">
-              <p style="color:#fff;font-weight:800;font-size:16px;margin:0;">${activity.name}</p>
-              <p style="color:#e0e7ff;font-size:11px;margin:4px 0 0;">${activity.academic_year ? 'ปีการศึกษา ' + activity.academic_year : ''}</p>
+              <p style="color:#fff;font-weight:800;font-size:16px;margin:0;">\${activity.title}</p>
+              <p style="color:#e0e7ff;font-size:11px;margin:4px 0 0;">\${activity.start_date ? 'เริ่ม: ' + new Date(activity.start_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</p>
             </div>
             <div style="display:inline-block;background:#fff;padding:20px;border-radius:16px;border:3px solid #e5e7eb;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
               <canvas id="qr-canvas"></canvas>
             </div>
-            <p style="color:#6b7280;font-size:11px;margin:16px 0 6px;word-break:break-all;max-width:380px;margin-left:auto;margin-right:auto;">${link}</p>
+            <p style="color:#6b7280;font-size:11px;margin:16px 0 6px;word-break:break-all;max-width:380px;margin-left:auto;margin-right:auto;">\${link}</p>
             <p style="color:#9ca3af;font-size:10px;margin:0 0 16px;">สแกน QR Code เพื่อเข้าสู่ระบบลงทะเบียน/ประเมิน</p>
             <div style="display:flex;gap:10px;justify-content:center;">
               <button id="qr-download-btn" style="padding:10px 20px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:transform 0.15s;"
@@ -1030,7 +1030,7 @@ const AdminDashboard = () => {
                 const dataUrl = canvas.toDataURL('image/png');
                 const a = document.createElement('a');
                 a.href = dataUrl;
-                a.download = `QR_${activity.name.replace(/[^a-zA-Z0-9\u0e01-\u0e59]/g, '_')}.png`;
+                a.download = `QR_\${activity.title.replace(/[^a-zA-Z0-9\\u0e01-\\u0e59]/g, '_')}.png`;
                 a.click();
               });
             }
