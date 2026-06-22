@@ -178,14 +178,22 @@ const PrintReport = () => {
             <div className="flex flex-wrap justify-center gap-y-6 gap-x-12">
               {activity_judges && activity_judges.length > 0 ? (
                 [...activity_judges]
-                  .sort((a, b) => (a.is_head_judge ? 1 : 0) - (b.is_head_judge ? 1 : 0))
+                  .sort((a, b) => {
+                    const getWeight = (r) => {
+                      const val = r === true ? 1 : r === false ? 0 : parseInt(r, 10) || 0;
+                      if (val === 1) return 3; // President
+                      if (val === 2) return 2; // Secretary
+                      return 1; // Normal Judge
+                    };
+                    return getWeight(a.is_head_judge) - getWeight(b.is_head_judge);
+                  })
                   .map((j) => (
                     <div key={j.id} className="text-center w-60">
                       <p className="mb-6 text-gray-500">ลงลายมือชื่อผู้ประเมินตัดสิน:</p>
                       <p className="border-b border-black w-48 mx-auto mb-1"></p>
                       <p className="font-bold">({j.fullname})</p>
                       <p className="text-gray-600">
-                        {j.is_head_judge ? 'ประธานกรรมการ' : 'กรรมการผู้ประเมิน'}
+                        {parseInt(j.is_head_judge, 10) === 1 ? 'ประธานกรรมการ' : parseInt(j.is_head_judge, 10) === 2 ? 'กรรมการและเลขานุการ' : 'กรรมการผู้ประเมิน'}
                       </p>
                     </div>
                   ))
@@ -211,11 +219,6 @@ const PrintReport = () => {
           </div>
         </div>
 
-        {/* Print Timestamp */}
-        <div className="mt-8 text-left text-gray-400 border-t pt-2 flex justify-between">
-          <span>ส่งพิมพ์อย่างเป็นทางการโดยระบบ NPC_Evaluate</span>
-          <span>จัดพิมพ์เอกสารวันที่: {new Date().toLocaleString()}</span>
-        </div>
       </div>
 
       {/* Page 2+: Detailed Competitor Sheets */}

@@ -8,6 +8,25 @@ const getLeaderboard = async (req, res, next) => {
   const { activityId } = req.params;
 
   try {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    // Check permissions: only admins, or assigned judges with role 1 (President) or 2 (Secretary)
+    if (userRole !== 'admin') {
+      const [assignments] = await db.query(
+        'SELECT is_head_judge FROM activity_judges WHERE activity_id = ? AND judge_id = ?',
+        [activityId, userId]
+      );
+      if (assignments.length === 0) {
+        res.status(403);
+        throw new Error('ขออภัย คุณไม่ได้รับมอบหมายให้เข้าถึงกิจกรรมนี้');
+      }
+      const roleVal = parseInt(assignments[0].is_head_judge, 10) || 0;
+      if (roleVal !== 1 && roleVal !== 2) {
+        res.status(403);
+        throw new Error('ขออภัย เฉพาะประธานกรรมการ หรือกรรมการและเลขานุการเท่านั้นที่มีสิทธิ์เปิดดู/พิมพ์รายงานนี้');
+      }
+    }
     // 1. Fetch activity details
     const [activities] = await db.query(
       'SELECT id, title, description, status, scoring_algorithm, criteria, host_organization, location FROM activities WHERE id = ?',
@@ -57,11 +76,11 @@ const getLeaderboard = async (req, res, next) => {
       id: j.id,
       fullname: j.fullname,
       institution_code: j.institution_code,
-      is_head_judge: !!j.is_head_judge,
+      is_head_judge: j.is_head_judge !== null && j.is_head_judge !== undefined ? parseInt(j.is_head_judge, 10) : 0,
       has_submitted: submittedJudgeIds.includes(j.id)
     }));
 
-    const headJudge = activityJudges.find(j => j.is_head_judge);
+    const headJudge = activityJudges.find(j => parseInt(j.is_head_judge, 10) === 1);
     const headJudgeName = headJudge ? headJudge.fullname : 'Head Judge';
 
     // 5. Calculate scores for each participant

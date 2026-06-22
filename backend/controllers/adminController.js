@@ -185,7 +185,7 @@ const createActivity = async (req, res, next) => {
 
       // Save judges if provided
       if (judges && judges.length > 0) {
-        const values = judges.map(j => [activityId, j.id, j.is_head_judge ? 1 : 0]);
+        const values = judges.map(j => [activityId, j.id, parseInt(j.is_head_judge, 10) || 0]);
         await conn.query(
           'INSERT INTO activity_judges (activity_id, judge_id, is_head_judge) VALUES ?',
           [values]
@@ -251,14 +251,15 @@ const updateActivity = async (req, res, next) => {
           // 2. Reset all to is_head_judge = 0 for this activity
           await conn.query('UPDATE activity_judges SET is_head_judge = 0 WHERE activity_id = ?', [activityId]);
 
-          // 3. Find the designated head judge from the request
-          const headJudgeReq = judges.find(j => j.is_head_judge);
-          if (headJudgeReq && currentJudgeIds.includes(headJudgeReq.id)) {
-            // Set this judge as head judge
-            await conn.query(
-              'UPDATE activity_judges SET is_head_judge = 1 WHERE activity_id = ? AND judge_id = ?',
-              [activityId, headJudgeReq.id]
-            );
+          // 3. Update role for each assigned judge
+          for (const j of judges) {
+            if (currentJudgeIds.includes(j.id)) {
+              const roleVal = parseInt(j.is_head_judge, 10) || 0;
+              await conn.query(
+                'UPDATE activity_judges SET is_head_judge = ? WHERE activity_id = ? AND judge_id = ?',
+                [roleVal, activityId, j.id]
+              );
+            }
           }
         }
         
@@ -293,7 +294,7 @@ const updateActivity = async (req, res, next) => {
       // Update judges list: delete and insert
       await conn.query('DELETE FROM activity_judges WHERE activity_id = ?', [activityId]);
       if (judges && judges.length > 0) {
-        const values = judges.map(j => [activityId, j.id, j.is_head_judge ? 1 : 0]);
+        const values = judges.map(j => [activityId, j.id, parseInt(j.is_head_judge, 10) || 0]);
         await conn.query(
           'INSERT INTO activity_judges (activity_id, judge_id, is_head_judge) VALUES ?',
           [values]
@@ -631,7 +632,7 @@ const assignJudges = async (req, res, next) => {
 
       // Insert new ones if provided
       if (judges && judges.length > 0) {
-        const values = judges.map(j => [activityId, j.id, j.is_head_judge ? 1 : 0]);
+        const values = judges.map(j => [activityId, j.id, parseInt(j.is_head_judge, 10) || 0]);
         await conn.query(
           'INSERT INTO activity_judges (activity_id, judge_id, is_head_judge) VALUES ?',
           [values]

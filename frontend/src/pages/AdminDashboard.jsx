@@ -319,7 +319,7 @@ const AdminDashboard = () => {
         logo_url: fullDetails.logo_url || '',
         banner_url: fullDetails.banner_url || '',
         login_config: parsedConfig,
-        judges: fullDetails.judges.map(j => ({ id: j.id, is_head_judge: !!j.is_head_judge }))
+        judges: fullDetails.judges.map(j => ({ id: j.id, is_head_judge: j.is_head_judge !== undefined ? parseInt(j.is_head_judge, 10) : 0 }))
       });
       setShowActivityModal(true);
     } catch (err) {
@@ -920,8 +920,8 @@ const AdminDashboard = () => {
 
       // Auto-assign the new judge
       setActivityForm(prev => {
-        const updatedJudges = [...prev.judges, { id: result.id, is_head_judge: false }];
-        const hasHead = updatedJudges.some(j => j.is_head_judge);
+        const updatedJudges = [...prev.judges, { id: result.id, is_head_judge: 0 }];
+        const hasHead = updatedJudges.some(j => parseInt(j.is_head_judge, 10) === 1);
         if (updatedJudges.length > 0 && !hasHead) {
           Swal.fire({
             icon: 'warning',
@@ -1838,13 +1838,13 @@ const AdminDashboard = () => {
                 className={`py-2 px-4 border-b-2 transition-all flex items-center gap-1.5 ${
                   modalActiveTab === 'judges' 
                     ? 'border-primary text-primary' 
-                    : activityForm.judges.length > 0 && !activityForm.judges.some(j => j.is_head_judge)
+                    : activityForm.judges.length > 0 && !activityForm.judges.some(j => parseInt(j.is_head_judge, 10) === 1)
                       ? 'border-transparent text-red-500 hover:text-red-600 font-bold'
                       : 'border-transparent text-gray-500 hover:text-primary'
                 }`}
               >
                 <span>คณะกรรมการตัดสิน ({activityForm.judges.length})</span>
-                {activityForm.judges.length > 0 && !activityForm.judges.some(j => j.is_head_judge) && (
+                {activityForm.judges.length > 0 && !activityForm.judges.some(j => parseInt(j.is_head_judge, 10) === 1) && (
                   <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shrink-0" title="ยังไม่ได้แต่งตั้งประธานกรรมการ" />
                 )}
               </button>
@@ -2031,10 +2031,10 @@ const AdminDashboard = () => {
                     </div>
                   )}
 
-                  {activityForm.judges.length > 0 && !activityForm.judges.some(j => j.is_head_judge) && (
+                  {activityForm.judges.length > 0 && !activityForm.judges.some(j => parseInt(j.is_head_judge, 10) === 1) && (
                     <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs font-semibold flex items-center gap-1.5 mb-4 animate-pulse">
                       <ShieldAlert className="w-4 h-4 shrink-0" />
-                      <span>กรุณาแต่งตั้งประธานกรรมการประเมินตัดสิน (คลิกปุ่ม "แต่งตั้งประธาน" ที่ชื่อกรรมการที่ต้องการ)</span>
+                      <span>กรุณาแต่งตั้งประธานกรรมการประเมินตัดสิน (เลือกตำแหน่งเป็นประธานกรรมการที่ชื่อกรรมการที่ต้องการ)</span>
                     </div>
                   )}
 
@@ -2110,14 +2110,15 @@ const AdminDashboard = () => {
                   <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
                     {allJudgesList.map((jd) => {
                       const isAssigned = activityForm.judges.some(j => j.id === jd.id);
-                      const isHead = activityForm.judges.some(j => j.id === jd.id && j.is_head_judge);
+                      const assignedJudge = activityForm.judges.find(j => j.id === jd.id);
+                      const currentRole = assignedJudge ? (assignedJudge.is_head_judge === true ? 1 : assignedJudge.is_head_judge === false ? 0 : parseInt(assignedJudge.is_head_judge, 10) || 0) : 0;
 
                       const toggleJudge = () => {
                         let updatedJudges;
                         if (isAssigned) {
                           updatedJudges = activityForm.judges.filter(j => j.id !== jd.id);
                         } else {
-                          updatedJudges = [...activityForm.judges, { id: jd.id, is_head_judge: false }];
+                          updatedJudges = [...activityForm.judges, { id: jd.id, is_head_judge: 0 }];
                         }
                         
                         setActivityForm({
@@ -2125,12 +2126,12 @@ const AdminDashboard = () => {
                           judges: updatedJudges
                         });
 
-                        const hasHead = updatedJudges.some(j => j.is_head_judge);
+                        const hasHead = updatedJudges.some(j => parseInt(j.is_head_judge, 10) === 1);
                         if (updatedJudges.length > 0 && !hasHead) {
                           Swal.fire({
                             icon: 'warning',
                             title: 'ยังไม่กำหนดประธานกรรมการ',
-                            text: 'กรุณาคลิกปุ่ม "แต่งตั้งประธาน" ที่ชื่อกรรมการที่ต้องการ',
+                            text: 'กรุณากำหนดตำแหน่ง "ประธานกรรมการ" ที่ชื่อกรรมการที่ต้องการ',
                             toast: true,
                             position: 'top-end',
                             showConfirmButton: false,
@@ -2140,26 +2141,46 @@ const AdminDashboard = () => {
                         }
                       };
 
-                      const setHead = () => {
-                        const updatedJudges = activityForm.judges.map(j => ({
-                          ...j,
-                          is_head_judge: j.id === jd.id
-                        }));
+                      const handleRoleChange = (e) => {
+                        const newRole = parseInt(e.target.value, 10);
+                        const updatedJudges = activityForm.judges.map(j => {
+                          if (j.id === jd.id) {
+                            return { ...j, is_head_judge: newRole };
+                          }
+                          if (newRole === 1 && parseInt(j.is_head_judge, 10) === 1) {
+                            return { ...j, is_head_judge: 0 };
+                          }
+                          return j;
+                        });
+                        
                         setActivityForm({
                           ...activityForm,
                           judges: updatedJudges
                         });
-                        
-                        Swal.fire({
-                          icon: 'success',
-                          title: 'แต่งตั้งประธานกรรมการสำเร็จ',
-                          text: `ตั้ง ${jd.fullname} เป็นประธานกรรมการ`,
-                          toast: true,
-                          position: 'top-end',
-                          showConfirmButton: false,
-                          timer: 3000,
-                          timerProgressBar: true
-                        });
+
+                        if (newRole === 1) {
+                          Swal.fire({
+                            icon: 'success',
+                            title: 'แต่งตั้งประธานกรรมการสำเร็จ',
+                            text: `ตั้ง ${jd.fullname} เป็นประธานกรรมการ`,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                          });
+                        } else if (newRole === 2) {
+                          Swal.fire({
+                            icon: 'success',
+                            title: 'แต่งตั้งกรรมการและเลขานุการสำเร็จ',
+                            text: `ตั้ง ${jd.fullname} เป็นกรรมการและเลขานุการ`,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                          });
+                        }
                       };
 
                       return (
@@ -2192,17 +2213,17 @@ const AdminDashboard = () => {
                           </div>
 
                           {isAssigned && (
-                            <button
-                              type="button"
-                              onClick={setHead}
-                              className={`py-1 px-2.5 rounded-full text-[10px] font-bold border transition-all ${
-                                isHead 
-                                  ? 'bg-accent/10 text-accent border-accent' 
-                                  : 'bg-white text-gray-500 border-gray-300 hover:bg-gray-100'
-                              }`}
-                            >
-                              {isHead ? '★ ประธานกรรมการ' : 'แต่งตั้งประธาน'}
-                            </button>
+                            <div className="flex items-center">
+                              <select
+                                value={currentRole}
+                                onChange={handleRoleChange}
+                                className="text-[10px] font-bold bg-white border border-gray-300 rounded-lg py-1 px-2 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                              >
+                                <option value={0}>กรรมการผู้ประเมิน</option>
+                                <option value={1}>★ ประธานกรรมการ</option>
+                                <option value={2}>✍️ กรรมการและเลขานุการ</option>
+                              </select>
+                            </div>
                           )}
                         </div>
                       );

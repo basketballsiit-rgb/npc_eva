@@ -55,7 +55,7 @@ const getMyTasks = async (req, res, next) => {
         status: act.status,
         scoring_algorithm: act.scoring_algorithm,
         criteria: typeof act.criteria === 'string' ? JSON.parse(act.criteria) : act.criteria,
-        is_head_judge: !!act.is_head_judge,
+        is_head_judge: act.is_head_judge !== null && act.is_head_judge !== undefined ? parseInt(act.is_head_judge, 10) : 0,
         participants: participantStatusList
       });
     }

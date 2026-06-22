@@ -36,11 +36,13 @@ const JudgeDashboard = () => {
   };
 
   const currentTask = tasks.find(t => t.id === parseInt(activityId));
-  const isHeadJudge = currentTask?.is_head_judge || false;
+  const isHeadJudge = parseInt(currentTask?.is_head_judge, 10) === 1;
+  const isSecretary = parseInt(currentTask?.is_head_judge, 10) === 2;
+  const canPrint = user?.role === 'admin' || isHeadJudge || isSecretary;
 
   useEffect(() => {
     let intervalId;
-    if (activityId && user && (user.role === 'admin' || isHeadJudge) && activeTab === 'live_report') {
+    if (activityId && user && user.role === 'admin' && activeTab === 'live_report') {
       fetchLiveReport();
       intervalId = setInterval(() => {
         fetchLiveReport();
@@ -336,7 +338,7 @@ const JudgeDashboard = () => {
               <ClipboardList className="w-5 h-5 shrink-0" />
               <span className="whitespace-nowrap">รายการตัดสินแข่งขัน</span>
             </button>
-            {(user?.role === 'admin' || isHeadJudge) && (
+            {user?.role === 'admin' && (
               <button
                 onClick={() => {
                   setActiveTab('live_report');
@@ -351,7 +353,7 @@ const JudgeDashboard = () => {
                 <span className="whitespace-nowrap">รายงานคะแนนเรียลไทม์</span>
               </button>
             )}
-            {(user?.role === 'admin' || isHeadJudge) && (
+            {canPrint && (
               <button
                 onClick={() => {
                   window.open(`${import.meta.env.BASE_URL}print-report/${activityId}`, '_blank');
@@ -423,6 +425,11 @@ const JudgeDashboard = () => {
                 <span className="w-2.5 h-2.5 bg-purple-600 rounded-full mr-2.5 animate-pulse"></span>
                 ★ ประธานกรรมการ (เชื่อมต่อแล้ว)
               </>
+            ) : isSecretary ? (
+              <>
+                <span className="w-2.5 h-2.5 bg-indigo-600 rounded-full mr-2.5 animate-pulse"></span>
+                ✍️ กรรมการและเลขานุการ (เชื่อมต่อแล้ว)
+              </>
             ) : (
               <>
                 <span className="w-2.5 h-2.5 bg-green-500 rounded-full mr-2.5 animate-pulse"></span>
@@ -461,9 +468,14 @@ const JudgeDashboard = () => {
                         <p className="text-xs text-gray-500">{act.description}</p>
                       </div>
                       <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-                        {act.is_head_judge && (
+                        {parseInt(act.is_head_judge, 10) === 1 && (
                           <span className="px-2 py-0.5 bg-accent/10 border border-accent/20 text-accent text-xs font-bold rounded-full">
                             ★ ประธานกรรมการ
+                          </span>
+                        )}
+                        {parseInt(act.is_head_judge, 10) === 2 && (
+                          <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded-full">
+                            ✍️ กรรมการและเลขานุการ
                           </span>
                         )}
                         <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
@@ -791,7 +803,7 @@ const JudgeDashboard = () => {
             )}
 
             {/* LIVE REPORT TAB */}
-            {activeTab === 'live_report' && (user?.role === 'admin' || isHeadJudge) && (
+            {activeTab === 'live_report' && user?.role === 'admin' && (
               <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 font-sans space-y-6">
                 <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
                   <div className="flex items-center gap-2">
