@@ -444,74 +444,80 @@ const AdminDashboard = () => {
 
       return (
         <div key={node.id} className="space-y-2">
-          <div className={`flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 p-3 rounded-lg border hover:shadow-sm transition-all ${depthClass}`}>
-            <div className="flex-1 space-y-1">
-              <input
-                type="text"
-                required
-                placeholder={titlePlaceholder}
-                value={node.name}
-                onChange={(e) => handleCriteriaNodeChange(node.id, 'name', e.target.value)}
-                className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white font-semibold"
-              />
-              {!hasChildren && (
-                <textarea
-                  placeholder="คำอธิบายเกณฑ์ Rubric หรือรายละเอียดการให้คะแนนเพิ่มเติม (ทางเลือก)"
-                  value={node.description || ''}
-                  onChange={(e) => handleCriteriaNodeChange(node.id, 'description', e.target.value)}
-                  rows={1}
-                  className="w-full border rounded-lg p-1.5 text-[10px] text-gray-500 focus:ring-1 focus:ring-primary focus:outline-none bg-white resize-y min-h-[1.8rem] font-sans"
+          <div className={`flex flex-col p-3 rounded-lg border hover:shadow-sm transition-all ${depthClass}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  required
+                  placeholder={titlePlaceholder}
+                  value={node.name}
+                  onChange={(e) => handleCriteriaNodeChange(node.id, 'name', e.target.value)}
+                  className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white font-semibold"
                 />
-              )}
-            </div>
+              </div>
 
-            <div className="w-full sm:w-28 flex items-center space-x-1">
-              <input
-                type="number"
-                required
-                min="1"
-                disabled={hasChildren}
-                placeholder="คะแนนเต็ม"
-                value={hasChildren ? parseFloat(node.max_score.toFixed(2)) : node.max_score}
-                onChange={(e) => handleCriteriaNodeChange(node.id, 'max_score', e.target.value)}
-                className={`w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none text-center font-bold ${
-                  hasChildren ? 'bg-gray-100 text-gray-500 font-medium' : 'bg-white text-gray-800'
-                }`}
-              />
-            </div>
+              <div className="w-full sm:w-28 flex items-center space-x-1">
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  disabled={hasChildren}
+                  placeholder="คะแนนเต็ม"
+                  value={hasChildren ? parseFloat(node.max_score.toFixed(2)) : node.max_score}
+                  onChange={(e) => handleCriteriaNodeChange(node.id, 'max_score', e.target.value)}
+                  className={`w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none text-center font-bold ${
+                    hasChildren ? 'bg-gray-100 text-gray-500 font-medium' : 'bg-white text-gray-800'
+                  }`}
+                />
+              </div>
 
-            <div className="w-full sm:w-28">
-              <input
-                type="number"
-                step="0.1"
-                required
-                placeholder="น้ำหนักคูณ"
-                value={node.weight}
-                onChange={(e) => handleCriteriaNodeChange(node.id, 'weight', e.target.value)}
-                className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none text-center font-semibold bg-white"
-              />
-            </div>
+              <div className="w-full sm:w-28">
+                <input
+                  type="number"
+                  step="0.1"
+                  required
+                  placeholder="น้ำหนักคูณ"
+                  value={node.weight}
+                  onChange={(e) => handleCriteriaNodeChange(node.id, 'weight', e.target.value)}
+                  className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none text-center font-semibold bg-white"
+                />
+              </div>
 
-            <div className="flex items-center space-x-1 justify-end w-20">
-              {depth < 3 && (
+              <div className="flex items-center space-x-1 justify-end w-20">
+                {depth < 3 && (
+                  <button
+                    type="button"
+                    onClick={() => addCriteriaNode(node.id)}
+                    title={depth === 1 ? "เพิ่มหัวข้อรอง" : "เพิ่มหัวข้อย่อย"}
+                    className="p-1.5 text-primary hover:bg-primary-soft rounded-lg transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                )}
+
                 <button
                   type="button"
-                  onClick={() => addCriteriaNode(node.id)}
-                  title={depth === 1 ? "เพิ่มหัวข้อรอง" : "เพิ่มหัวข้อย่อย"}
-                  className="p-1.5 text-primary hover:bg-primary-soft rounded-lg transition-all"
+                  onClick={() => removeCriteriaNode(node.id)}
+                  className="p-1.5 text-danger hover:bg-danger/10 rounded-lg transition-all"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => removeCriteriaNode(node.id)}
-                className="p-1.5 text-danger hover:bg-danger/10 rounded-lg transition-all"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              </div>
             </div>
+
+            {/* Rubric/Description field for leaf nodes */}
+            {!hasChildren && (
+              <div className="mt-2">
+                <textarea
+                  rows="2"
+                  placeholder="คำอธิบายเกณฑ์หรือรูบริกการให้คะแนน เช่น ดีมาก=10, ดี=8, พอใช้=5 (ทางเลือก)"
+                  value={node.description || ''}
+                  onChange={(e) => handleCriteriaNodeChange(node.id, 'description', e.target.value)}
+                  className="w-full border rounded-lg p-2 text-[10px] text-gray-600 focus:ring-1 focus:ring-primary focus:outline-none bg-white/70 font-sans resize-y"
+                />
+              </div>
+            )}
           </div>
 
           {hasChildren && (

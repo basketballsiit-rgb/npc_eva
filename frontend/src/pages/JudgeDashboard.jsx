@@ -708,8 +708,9 @@ const JudgeDashboard = () => {
                               </div>
 
                               {node.description && (
-                                <div className="mt-1.5 mb-2.5 text-[10px] text-gray-600 bg-info/5 border border-info/10 p-2 rounded-lg leading-relaxed whitespace-pre-line font-sans">
-                                  <strong>💡 คำอธิบายเกณฑ์ (Rubric):</strong> {node.description}
+                                <div className="text-[10px] text-gray-600 bg-white border border-gray-150 rounded-lg p-2.5 my-2.5 font-sans whitespace-pre-line leading-relaxed shadow-inner">
+                                  📋 <span className="font-bold text-primary-dark">เกณฑ์รูบริกการให้คะแนน:</span>
+                                  <div className="mt-1 text-gray-500 font-normal">{node.description}</div>
                                 </div>
                               )}
 
