@@ -190,7 +190,7 @@ const JudgeDashboard = () => {
     const leaves = getLeafNodes(activity.criteria);
     const initialScores = {};
     leaves.forEach(leaf => {
-      initialScores[leaf.id] = 0;
+      initialScores[leaf.id] = leaf.type === 'rubric' ? '' : 0;
     });
     setScoresForm(initialScores);
   };
@@ -238,12 +238,20 @@ const JudgeDashboard = () => {
     e.preventDefault();
 
     const leaves = getLeafNodes(selectedActivity.criteria);
-    const invalid = leaves.some(
-      leaf => scoresForm[leaf.id] === undefined || scoresForm[leaf.id] < 0 || scoresForm[leaf.id] > leaf.max_score
-    );
+    const invalid = leaves.some(leaf => {
+      const val = scoresForm[leaf.id];
+      if (val === undefined || val === '') return true;
+      const num = parseFloat(val);
+      if (isNaN(num) || num < 0 || num > leaf.max_score) return true;
+      if (leaf.type === 'rubric') {
+        const hasMatchingOption = (leaf.rubric_options || []).some(o => o.score === num);
+        if (!hasMatchingOption) return true;
+      }
+      return false;
+    });
 
     if (invalid) {
-      Swal.fire('ข้อผิดพลาด', 'กรุณาระบุคะแนนให้ถูกต้องตามเกณฑ์ขั้นต่ำและขั้นสูงสุด', 'error');
+      Swal.fire('ข้อผิดพลาด', 'กรุณากรอกคะแนนหรือเลือกตัวเลือกรูบริกให้ครบถ้วนและถูกต้อง', 'error');
       return;
     }
 
@@ -714,20 +722,61 @@ const JudgeDashboard = () => {
                                 </div>
                               )}
 
-                              <div className="flex items-center mt-3">
-                                <input
-                                  type="number"
-                                  step="0.5"
-                                  required
-                                  min="0"
-                                  max={node.max_score}
-                                  value={scoresForm[node.id] || ''}
-                                  onChange={(e) => handleScoreChange(node.id, node.max_score, e.target.value)}
-                                  className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none bg-white font-mono font-bold"
-                                  placeholder={user?.role === 'admin' ? 'ไม่สามารถระบุคะแนนได้ในโหมดพรีวิว' : `กรอกคะแนนประเมินระหว่าง 0 ถึง ${node.max_score}`}
-                                  disabled={submitting || user?.role === 'admin'}
-                                />
-                              </div>
+                              {node.type === 'rubric' ? (
+                                <div className="mt-3 space-y-2">
+                                  {(node.rubric_options || [])
+                                    .slice()
+                                    .sort((a, b) => b.score - a.score)
+                                    .map((opt, optIdx) => {
+                                      const isSelected = scoresForm[node.id] === opt.score;
+                                      return (
+                                        <label
+                                          key={optIdx}
+                                          className={`flex items-start p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                                            isSelected
+                                              ? 'border-primary bg-primary/5 text-primary shadow-sm font-semibold'
+                                              : 'border-gray-200 hover:border-gray-300 bg-white text-gray-700'
+                                          } ${submitting || user?.role === 'admin' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                        >
+                                          <input
+                                            type="radio"
+                                            name={`rubric-${node.id}`}
+                                            value={opt.score}
+                                            checked={isSelected}
+                                            onChange={() => {
+                                              if (!(submitting || user?.role === 'admin')) {
+                                                handleScoreChange(node.id, node.max_score, opt.score);
+                                              }
+                                            }}
+                                            disabled={submitting || user?.role === 'admin'}
+                                            className="mt-1 mr-3 h-4 w-4 text-primary border-gray-300 focus:ring-primary cursor-pointer"
+                                          />
+                                          <div className="flex-1 text-xs">
+                                            <span className="inline-block px-2 py-0.5 mr-2 rounded bg-primary/10 text-primary font-bold font-mono">
+                                              {opt.score} คะแนน
+                                            </span>
+                                            <span className="font-sans leading-relaxed">{opt.label}</span>
+                                          </div>
+                                        </label>
+                                      );
+                                    })}
+                                </div>
+                              ) : (
+                                <div className="flex items-center mt-3">
+                                  <input
+                                    type="number"
+                                    step="0.5"
+                                    required
+                                    min="0"
+                                    max={node.max_score}
+                                    value={scoresForm[node.id] || ''}
+                                    onChange={(e) => handleScoreChange(node.id, node.max_score, e.target.value)}
+                                    className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none bg-white font-mono font-bold"
+                                    placeholder={user?.role === 'admin' ? 'ไม่สามารถระบุคะแนนได้ในโหมดพรีวิว' : `กรอกคะแนนประเมินระหว่าง 0 ถึง ${node.max_score}`}
+                                    disabled={submitting || user?.role === 'admin'}
+                                  />
+                                </div>
+                              )}
                             </div>
                           );
                         }

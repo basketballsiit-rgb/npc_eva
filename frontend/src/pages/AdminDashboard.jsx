@@ -508,14 +508,124 @@ const AdminDashboard = () => {
 
             {/* Rubric/Description field for leaf nodes */}
             {!hasChildren && (
-              <div className="mt-2">
-                <textarea
-                  rows="2"
-                  placeholder="คำอธิบายเกณฑ์หรือรูบริกการให้คะแนน เช่น ดีมาก=10, ดี=8, พอใช้=5 (ทางเลือก)"
-                  value={node.description || ''}
-                  onChange={(e) => handleCriteriaNodeChange(node.id, 'description', e.target.value)}
-                  className="w-full border rounded-lg p-2 text-[10px] text-gray-600 focus:ring-1 focus:ring-primary focus:outline-none bg-white/70 font-sans resize-y"
-                />
+              <div className="mt-2 space-y-2 border-t pt-2 border-dashed border-gray-150">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase">รูปแบบการให้คะแนน:</span>
+                    <select
+                      value={node.type || 'numeric'}
+                      onChange={(e) => {
+                        const newType = e.target.value;
+                        const defaultOptions = newType === 'rubric' ? [
+                          { score: 10, label: 'ดีมาก (ผลงานยอดเยี่ยม โดดเด่น)' },
+                          { score: 5, label: 'พอใช้ (ผลงานปานกลาง ทั่วไป)' },
+                          { score: 0, label: 'ปรับปรุง (ผลงานไม่ผ่านเกณฑ์)' }
+                        ] : [];
+                        
+                        // Set options and type
+                        handleCriteriaNodeChange(node.id, 'type', newType);
+                        handleCriteriaNodeChange(node.id, 'rubric_options', defaultOptions);
+                        
+                        // Set max score
+                        const newMax = newType === 'rubric' ? 10 : 10;
+                        handleCriteriaNodeChange(node.id, 'max_score', newMax);
+                      }}
+                      className="text-[10px] bg-white border rounded p-1 font-semibold text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                    >
+                      <option value="numeric">คะแนนดิบ (ตัวเลข)</option>
+                      <option value="rubric">รูบริกตัวเลือก (คลิกเลือกคะแนน)</option>
+                    </select>
+                  </div>
+                  
+                  {node.type === 'rubric' && (
+                    <span className="text-[9px] text-primary font-bold">
+                      * คะแนนเต็มจะถูกกำหนดจากคะแนนสูงสุดของตัวเลือกโดยอัตโนมัติ
+                    </span>
+                  )}
+                </div>
+
+                {node.type === 'rubric' ? (
+                  <div className="bg-white/50 p-2.5 rounded-lg border border-gray-200 space-y-2">
+                    <span className="text-[10px] text-gray-500 font-bold block">กำหนดรายการตัวเลือกรูบริก:</span>
+                    <div className="space-y-1.5">
+                      {(node.rubric_options || []).map((opt, optIdx) => {
+                        const handleOptionChange = (field, val) => {
+                          const updatedOpts = (node.rubric_options || []).map((o, idx) => {
+                            if (idx === optIdx) {
+                              return { ...o, [field]: field === 'score' ? (parseFloat(val) || 0) : val };
+                            }
+                            return o;
+                          });
+                          handleCriteriaNodeChange(node.id, 'rubric_options', updatedOpts);
+                          
+                          if (field === 'score') {
+                            const maxScore = updatedOpts.length > 0 ? Math.max(...updatedOpts.map(o => o.score), 0) : 0;
+                            handleCriteriaNodeChange(node.id, 'max_score', maxScore);
+                          }
+                        };
+
+                        const removeOption = () => {
+                          const updatedOpts = (node.rubric_options || []).filter((_, idx) => idx !== optIdx);
+                          handleCriteriaNodeChange(node.id, 'rubric_options', updatedOpts);
+                          
+                          const maxScore = updatedOpts.length > 0 ? Math.max(...updatedOpts.map(o => o.score), 0) : 0;
+                          handleCriteriaNodeChange(node.id, 'max_score', maxScore);
+                        };
+
+                        return (
+                          <div key={optIdx} className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              placeholder="คะแนน"
+                              value={opt.score}
+                              onChange={(e) => handleOptionChange('score', e.target.value)}
+                              className="w-16 border rounded p-1 text-[10px] text-center font-bold font-mono"
+                            />
+                            <input
+                              type="text"
+                              placeholder="คำอธิบายเกณฑ์และรายละเอียดผลงาน"
+                              value={opt.label}
+                              onChange={(e) => handleOptionChange('label', e.target.value)}
+                              className="flex-1 border rounded p-1 text-[10px] font-sans"
+                            />
+                            <button
+                              type="button"
+                              onClick={removeOption}
+                              title="ลบแถวนี้"
+                              className="text-red-500 hover:text-red-700 p-1 font-bold text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentOpts = node.rubric_options || [];
+                        const lastScore = currentOpts.length > 0 ? currentOpts[currentOpts.length - 1].score : 10;
+                        const newScore = Math.max(lastScore - 2, 0);
+                        const updatedOpts = [...currentOpts, { score: newScore, label: '' }];
+                        handleCriteriaNodeChange(node.id, 'rubric_options', updatedOpts);
+                        
+                        const maxScore = Math.max(...updatedOpts.map(o => o.score), 0);
+                        handleCriteriaNodeChange(node.id, 'max_score', maxScore);
+                      }}
+                      className="py-1 px-2.5 bg-primary/10 hover:bg-primary/20 text-primary text-[9px] font-bold rounded transition-all"
+                    >
+                      + เพิ่มตัวเลือกเกณฑ์
+                    </button>
+                  </div>
+                ) : (
+                  <textarea
+                    rows="2"
+                    placeholder="คำอธิบายเกณฑ์หรือรูบริกการให้คะแนน เช่น ดีมาก=10, ดี=8, พอใช้=5 (ทางเลือก)"
+                    value={node.description || ''}
+                    onChange={(e) => handleCriteriaNodeChange(node.id, 'description', e.target.value)}
+                    className="w-full border rounded-lg p-2 text-[10px] text-gray-600 focus:ring-1 focus:ring-primary focus:outline-none bg-white/70 font-sans resize-y"
+                  />
+                )}
               </div>
             )}
           </div>
