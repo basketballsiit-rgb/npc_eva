@@ -15,18 +15,44 @@ const Login = () => {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  // Registration View States
+  const [viewMode, setViewMode] = useState('login'); // 'login' or 'register'
+  const [regForm, setRegForm] = useState({
+    name: '',
+    type: 'individual',
+    institution_code: '',
+    project_title: '',
+    team_members: '',
+    project_url: ''
+  });
+  const [attachmentFile, setAttachmentFile] = useState(null);
+  const [systemSettings, setSystemSettings] = useState(null);
+
   useEffect(() => {
     if (activityId) {
       const fetchActivity = async () => {
         try {
           const data = await api.get(`/api/auth/activities/public/${activityId}`);
           setActivityInfo(data);
+          if (data.system_settings) {
+            setSystemSettings(data.system_settings);
+          }
         } catch (err) {
           console.error(err);
           Swal.fire('ข้อผิดพลาด', 'ไม่พบรหัสกิจกรรมการประเมินนี้ในระบบ', 'error');
         }
       };
       fetchActivity();
+    } else {
+      const fetchSettings = async () => {
+        try {
+          const data = await api.get('/api/auth/settings');
+          setSystemSettings(data);
+        } catch (err) {
+          console.error('Failed to fetch system settings:', err);
+        }
+      };
+      fetchSettings();
     }
   }, [activityId]);
 
@@ -69,6 +95,86 @@ const Login = () => {
         icon: 'error',
         title: 'เข้าสู่ระบบล้มเหลว',
         text: error.message === 'Invalid username or password' ? 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' : error.message,
+        confirmButtonColor: '#D32F2F'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!regForm.name) {
+      Swal.fire({
+        icon: 'error',
+        title: 'ระบุข้อมูลไม่ครบถ้วน',
+        text: regForm.type === 'team' ? 'กรุณาระบุชื่อทีมแข่งขัน' : 'กรุณาระบุชื่อผู้แข่งขัน',
+        confirmButtonColor: '#D32F2F'
+      });
+      return;
+    }
+
+    if (activityInfo?.competition_type === 'out_institution' && !regForm.institution_code) {
+      Swal.fire({
+        icon: 'error',
+        title: 'ระบุข้อมูลไม่ครบถ้วน',
+        text: 'กรุณาระบุรหัสวิทยาลัย/สังกัดสถาบัน',
+        confirmButtonColor: '#D32F2F'
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('name', regForm.name);
+      formData.append('type', regForm.type);
+      if (activityInfo?.competition_type === 'out_institution') {
+        formData.append('institution_code', regForm.institution_code);
+      } else {
+        formData.append('institution_code', '');
+      }
+      formData.append('project_title', regForm.project_title);
+      formData.append('team_members', regForm.team_members);
+      formData.append('project_url', regForm.project_url);
+      if (attachmentFile) {
+        formData.append('attachment', attachmentFile);
+      }
+
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${API_URL}/api/auth/activities/public/${activityId}/register`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'เกิดข้อผิดพลาดในการลงทะเบียน');
+      }
+
+      Swal.fire({
+        icon: 'success',
+        title: 'ลงทะเบียนสำเร็จ!',
+        text: 'ข้อมูลการสมัครของคุณถูกบันทึกเรียบร้อยแล้ว คณะกรรมการจะทำการประเมินผลงานของท่าน',
+        confirmButtonColor: '#4A2C6D'
+      });
+
+      // Reset form and go back to login view
+      setRegForm({
+        name: '',
+        type: 'individual',
+        institution_code: '',
+        project_title: '',
+        team_members: '',
+        project_url: ''
+      });
+      setAttachmentFile(null);
+      setViewMode('login');
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'ลงทะเบียนไม่สำเร็จ',
+        text: err.message,
         confirmButtonColor: '#D32F2F'
       });
     } finally {
@@ -155,10 +261,10 @@ const Login = () => {
                     />
                   ))}
                 </div>
-              ) : activityInfo?.system_settings?.institution_logo ? (
+              ) : systemSettings?.institution_logo ? (
                 <div className="w-full flex justify-center mb-6">
                   <img 
-                    src={getUploadUrl(activityInfo.system_settings.institution_logo)} 
+                    src={getUploadUrl(systemSettings.institution_logo)} 
                     alt="Institution Logo" 
                     className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-lg rounded-xl bg-white p-2 border border-white/10"
                   />
@@ -236,11 +342,11 @@ const Login = () => {
                     NPC_Evaluate
                   </h1>
                   <p className="text-gray-300 text-sm leading-relaxed">
-                    ระบบประเมินและตัดสินการประกวดการแข่งขันระดับหน่วย/จังหวัด วิทยาลัยสารพัดช่างน่าน
+                    ระบบประเมินและตัดสินการประกวดการแข่งขันระดับหน่วย/จังหวัด {systemSettings?.institution_name || 'วิทยาลัยสารพัดช่างน่าน'}
                   </p>
                   <div className="border-t border-white/10 pt-4 mt-3">
                     <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider block">
-                      Nan Polytechnic College
+                      {systemSettings?.institution_name === 'วิทยาลัยสารพัดช่างน่าน' ? 'Nan Polytechnic College' : (systemSettings?.institution_name || 'Nan Polytechnic College')}
                     </span>
                   </div>
                 </div>
@@ -262,69 +368,240 @@ const Login = () => {
         <div className="absolute w-96 h-96 bg-primary-light/5 rounded-full -bottom-12 -right-12 blur-3xl"></div>
 
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-8 z-10 hover-scale">
-          <div className="mb-6 text-center md:text-left">
-            <h2 className="text-2xl font-bold text-gray-900">เข้าสู่ระบบการตัดสิน</h2>
-            <p className="text-sm text-gray-500 mt-1">กรุณากรอกข้อมูลผู้ใช้งาน (Username) และรหัสผ่าน</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้ (Username)</label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                  <User className="w-5 h-5" />
-                </span>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm"
-                  placeholder="กรอกชื่อผู้ใช้ของคุณ"
-                  disabled={loading}
-                />
+          {viewMode === 'login' ? (
+            <>
+              <div className="mb-6 text-center md:text-left">
+                <h2 className="text-2xl font-bold text-gray-900">เข้าสู่ระบบการตัดสิน</h2>
+                <p className="text-sm text-gray-500 mt-1">กรุณากรอกข้อมูลผู้ใช้งาน (Username) และรหัสผ่าน</p>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">รหัสผ่าน (Password)</label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                  <Lock className="w-5 h-5" />
-                </span>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm"
-                  placeholder="กรอกรหัสผ่านของคุณ"
-                  disabled={loading}
-                />
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้ (Username)</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                      <User className="w-5 h-5" />
+                    </span>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold"
+                      placeholder="กรอกชื่อผู้ใช้ของคุณ"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">รหัสผ่าน (Password)</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                      <Lock className="w-5 h-5" />
+                    </span>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold"
+                      placeholder="กรอกรหัสผ่านของคุณ"
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                      disabled={loading}
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                  type="submit"
                   disabled={loading}
+                  className="w-full py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 transition-all flex items-center justify-center text-base mt-2"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {loading ? (
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    'เข้าสู่ระบบ'
+                  )}
                 </button>
-              </div>
-            </div>
+              </form>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 transition-all flex items-center justify-center text-base mt-2"
-            >
-              {loading ? (
-                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                'เข้าสู่ระบบ'
+              {loginConfig.enable_registration && (
+                <div className="text-center mt-5 pt-4 border-t border-dashed border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('register')}
+                    className="text-sm font-bold text-primary hover:text-primary-dark hover:underline transition-all"
+                  >
+                    ลงทะเบียนผู้เข้าแข่งขันออนไลน์ (Online Registration) →
+                  </button>
+                </div>
               )}
-            </button>
-          </form>
+            </>
+          ) : (
+            <>
+              <div className="mb-6 text-center md:text-left">
+                <h2 className="text-2xl font-bold text-gray-900">ลงทะเบียนผู้เข้าแข่งขัน</h2>
+                <p className="text-sm text-gray-500 mt-1">กรอกรายละเอียดเพื่อลงทะเบียนรับการประเมินการแข่งขัน</p>
+              </div>
+
+              <form onSubmit={handleRegisterSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-2">ประเภทผู้เข้าแข่งขัน</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setRegForm({ ...regForm, type: 'individual' })}
+                      className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
+                        regForm.type === 'individual'
+                          ? 'bg-primary/10 border-primary text-primary shadow-sm'
+                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      บุคคล (Individual)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRegForm({ ...regForm, type: 'team' })}
+                      className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
+                        regForm.type === 'team'
+                          ? 'bg-primary/10 border-primary text-primary shadow-sm'
+                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      กลุ่ม / ทีม (Team)
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
+                    {regForm.type === 'team' ? 'ชื่อทีมแข่งขัน' : 'ชื่อ-นามสกุลจริงผู้สมัคร'} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={regForm.name}
+                    onChange={(e) => setRegForm({ ...regForm, name: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold"
+                    placeholder={regForm.type === 'team' ? "ตัวอย่าง: ทีมวิศวกรคอมพิวเตอร์" : "ตัวอย่าง: นายสมชาย ยินดี"}
+                    disabled={loading}
+                  />
+                </div>
+
+                {activityInfo?.competition_type === 'out_institution' && (
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
+                      รหัสวิทยาลัย / สถาบันต้นสังกัด <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={regForm.institution_code}
+                      onChange={(e) => setRegForm({ ...regForm, institution_code: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold"
+                      placeholder="ระบุตัวย่อ เช่น NanTC, CTC"
+                      disabled={loading}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">ชื่อผลงาน / โครงการที่เข้าแข่งขัน (ถ้ามี)</label>
+                  <input
+                    type="text"
+                    value={regForm.project_title}
+                    onChange={(e) => setRegForm({ ...regForm, project_title: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold"
+                    placeholder="ระบุชื่อสิ่งประดิษฐ์/ผลงาน/โครงการ"
+                    disabled={loading}
+                  />
+                </div>
+
+                {regForm.type === 'team' && (
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">รายชื่อสมาชิกในทีม (เขียนเรียงบรรทัด)</label>
+                    <textarea
+                      value={regForm.team_members}
+                      onChange={(e) => setRegForm({ ...regForm, team_members: e.target.value })}
+                      rows="2"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-medium"
+                      placeholder="1. นายสมชาย ดีใจ&#10;2. นางสาวสมศรี มีสุข"
+                      disabled={loading}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">ลิงก์ข้อมูลเพิ่มเติม / วิดีโอนำเสนอ (ถ้ามี)</label>
+                  <input
+                    type="url"
+                    value={regForm.project_url}
+                    onChange={(e) => setRegForm({ ...regForm, project_url: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm"
+                    placeholder="เช่น https://github.com/... หรือ YouTube URL"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5 font-semibold text-gray-700">ไฟล์เอกสารแนบ (ถ้ามี)</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.zip,.rar,.tar,.gz,image/*"
+                    onChange={(e) => setAttachmentFile(e.target.files[0])}
+                    className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:cursor-pointer"
+                    disabled={loading}
+                  />
+                  <p className="text-[9px] text-gray-400 mt-1">ไฟล์ไม่เกิน 5MB (รองรับ PDF, ZIP, RAR, รูปภาพ)</p>
+                </div>
+
+                <div className="flex gap-3 pt-3 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViewMode('login');
+                      setRegForm({
+                        name: '',
+                        type: 'individual',
+                        institution_code: '',
+                        project_title: '',
+                        team_members: '',
+                        project_url: ''
+                      });
+                      setAttachmentFile(null);
+                    }}
+                    className="w-1/3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg text-xs transition-all"
+                    disabled={loading}
+                  >
+                    ย้อนกลับ
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-2/3 py-2 bg-primary hover:bg-primary-dark text-white font-bold rounded-lg shadow transition-all flex items-center justify-center text-xs"
+                  >
+                    {loading ? (
+                      <svg className="animate-spin h-4 w-4 text-white mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      'ยืนยันลงทะเบียน'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
 
           <div className="mt-8 text-center text-xs text-gray-400 font-medium border-t border-gray-100 pt-5">
             ระบบบันทึกคะแนนที่ปลอดภัยสิทธิ์แบบ Append-Only • วิทยาลัยสารพัดช่างน่าน

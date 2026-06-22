@@ -31,6 +31,16 @@ const AdminDashboard = () => {
   const [activities, setActivities] = useState([]);
   const [judges, setJudges] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [staff, setStaff] = useState([]);
+  const [showStaffModal, setShowStaffModal] = useState(false);
+  const [isEditingStaff, setIsEditingStaff] = useState(false);
+  const [editingStaffId, setEditingStaffId] = useState(null);
+  const [staffForm, setStaffForm] = useState({
+    username: '',
+    password: '',
+    fullname: '',
+    status: 'active'
+  });
 
   // Modal / Form States
   const [showActivityModal, setShowActivityModal] = useState(false);
@@ -201,6 +211,9 @@ const AdminDashboard = () => {
       } else if (activeTab === 'settings') {
         const settingsData = await api.get('/api/admin/settings');
         setSystemSettings(settingsData);
+      } else if (activeTab === 'staff') {
+        const staffData = await api.get('/api/admin/staff');
+        setStaff(staffData);
       } else if (activeTab === 'live_report') {
         const actData = await api.get('/api/admin/activities');
         setActivities(actData);
@@ -843,6 +856,16 @@ const AdminDashboard = () => {
     // First check if it has scores to decide dialog type
     const hasScores = (act.evaluations_submitted || 0) > 0;
 
+    if (hasScores && user?.role === 'staff') {
+      Swal.fire({
+        title: 'ปฏิเสธการเข้าถึง',
+        text: 'เจ้าหน้าที่ระบบไม่ได้รับอนุญาตให้ลบกิจกรรมที่มีคะแนนประเมินบันทึกแล้ว กรุณาแจ้งผู้ดูแลระบบสูงสุด (Admin) เพื่อจัดการ',
+        icon: 'error',
+        confirmButtonColor: '#4A2C6D'
+      });
+      return;
+    }
+
     if (hasScores) {
       // Step 1: Warn about scores
       const step1 = await Swal.fire({
@@ -1236,6 +1259,75 @@ const AdminDashboard = () => {
     });
   };
 
+  const handleOpenAddStaff = () => {
+    setStaffForm({ username: '', password: '', fullname: '', status: 'active' });
+    setIsEditingStaff(false);
+    setEditingStaffId(null);
+    setShowStaffModal(true);
+  };
+
+  const handleOpenEditStaff = (member) => {
+    setStaffForm({
+      username: member.username,
+      password: '',
+      fullname: member.fullname,
+      status: member.status || 'active'
+    });
+    setIsEditingStaff(true);
+    setEditingStaffId(member.id);
+    setShowStaffModal(true);
+  };
+
+  const handleSaveStaff = async (e) => {
+    e.preventDefault();
+
+    if (!staffForm.fullname || !staffForm.username) {
+      Swal.fire('ข้อผิดพลาด', 'กรุณาระบุชื่อ-นามสกุล และชื่อผู้ใช้งาน', 'error');
+      return;
+    }
+
+    if (!isEditingStaff && !staffForm.password) {
+      Swal.fire('ข้อผิดพลาด', 'กรุณาระบุรหัสผ่านสำหรับผู้ใช้งานใหม่', 'error');
+      return;
+    }
+
+    try {
+      if (isEditingStaff) {
+        await api.put(`/api/admin/staff/${editingStaffId}`, staffForm);
+        Swal.fire('สำเร็จ', 'แก้ไขข้อมูลเจ้าหน้าที่เรียบร้อยแล้ว', 'success');
+      } else {
+        await api.post('/api/admin/staff', staffForm);
+        Swal.fire('สำเร็จ', 'เพิ่มเจ้าหน้าที่เรียบร้อยแล้ว', 'success');
+      }
+      setShowStaffModal(false);
+      fetchDashboardData();
+    } catch (err) {
+      Swal.fire('ข้อผิดพลาด', err.message, 'error');
+    }
+  };
+
+  const handleDeleteStaff = async (member) => {
+    Swal.fire({
+      title: 'ยืนยันการลบเจ้าหน้าที่?',
+      text: `คุณแน่ใจหรือไม่ว่าต้องการลบเจ้าหน้าที่ "${member.fullname}" ออกจากระบบ? การลบนี้ไม่สามารถกู้คืนได้`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#D32F2F',
+      confirmButtonText: 'ยืนยันการลบ',
+      cancelButtonText: 'ยกเลิก'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await api.delete(`/api/admin/staff/${member.id}`);
+          Swal.fire('ลบเรียบร้อยแล้ว', 'ลบเจ้าหน้าที่ออกจากระบบเรียบร้อยแล้ว', 'success');
+          fetchDashboardData();
+        } catch (err) {
+          Swal.fire('ลบไม่สำเร็จ', err.message, 'error');
+        }
+      }
+    });
+  };
+
   // --- RENDERING CHARTS FOR LIVE DASHBOARD ---
   const renderDashboardCharts = () => {
     if (!stats || !stats.liveRankings || stats.liveRankings.length === 0) {
@@ -1386,6 +1478,17 @@ const AdminDashboard = () => {
               <Settings className="w-5 h-5 shrink-0" />
               <span className="whitespace-nowrap">ตั้งค่าระบบทั่วไป</span>
             </button>
+            {user?.role === 'admin' && (
+              <button
+                onClick={() => setActiveTab('staff')}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm transition-all ${
+                  activeTab === 'staff' ? 'bg-primary text-white font-semibold shadow-md' : 'text-primary-soft hover:bg-primary/20'
+                }`}
+              >
+                <ShieldAlert className="w-5 h-5 shrink-0" />
+                <span className="whitespace-nowrap">จัดการเจ้าหน้าที่</span>
+              </button>
+            )}
           </nav>
         </div>
 
@@ -1411,6 +1514,7 @@ const AdminDashboard = () => {
               {activeTab === 'judges' && 'การดูแลและตั้งค่ากรรมการ'}
               {activeTab === 'live_report' && 'รายงานผลคะแนนเรียลไทม์ (เต็มจอ)'}
               {activeTab === 'settings' && 'การตั้งค่าระบบและตราโลโก้'}
+              {activeTab === 'staff' && 'การจัดการเจ้าหน้าที่ดูแลระบบ'}
             </h2>
             <p className="text-sm text-gray-500 mt-1">วิทยาลัยสารพัดช่างน่าน (Nan Polytechnic College)</p>
           </div>
@@ -1727,6 +1831,74 @@ const AdminDashboard = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            )}
+
+            {/* STAFF MANAGEMENT TAB */}
+            {activeTab === 'staff' && (
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 font-sans">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-bold text-primary-dark">รายชื่อเจ้าหน้าที่จัดการกิจกรรม</h3>
+                  <button
+                    onClick={handleOpenAddStaff}
+                    className="py-2.5 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center text-sm font-semibold transition-all shadow"
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" /> เพิ่มเจ้าหน้าที่ใหม่
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">ชื่อ-นามสกุลจริง</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">ชื่อผู้ใช้งาน (Username)</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">บทบาท</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">สถานะการใช้งาน</th>
+                        <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">การจัดการ</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200 text-sm">
+                      {staff.map((st) => (
+                        <tr key={st.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 font-bold text-gray-900">{st.fullname}</td>
+                          <td className="px-6 py-4 font-mono text-xs">{st.username}</td>
+                          <td className="px-6 py-4 font-medium text-gray-600">เจ้าหน้าที่ (Staff)</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2.5 py-0.5 rounded text-xs font-bold ${
+                              st.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {st.status === 'active' ? 'เปิดใช้งาน' : 'ระงับใช้งาน'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center space-x-2">
+                            <button
+                              onClick={() => handleOpenEditStaff(st)}
+                              title="แก้ไขข้อมูลเจ้าหน้าที่"
+                              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteStaff(st)}
+                              title="ลบเจ้าหน้าที่"
+                              className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-all"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {staff.length === 0 && (
+                        <tr>
+                          <td colSpan="5" className="px-6 py-10 text-center text-gray-500">
+                            ไม่พบข้อมูลเจ้าหน้าที่ดูแลระบบ
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -2379,6 +2551,25 @@ const AdminDashboard = () => {
                   <div className="flex flex-col lg:flex-row gap-6">
                     {/* Control Panel (Left column of the tab) */}
                     <div className="flex-1 space-y-5">
+                      {/* Competitor Online Registration Toggle */}
+                      <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 space-y-2">
+                        <label className="flex items-center space-x-2.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={activityForm.login_config.enable_registration || false}
+                            onChange={(e) => setActivityForm({
+                              ...activityForm,
+                              login_config: { ...activityForm.login_config, enable_registration: e.target.checked }
+                            })}
+                            className="w-4 h-4 text-primary focus:ring-primary rounded"
+                          />
+                          <span className="text-xs font-bold text-gray-800">เปิดระบบลงทะเบียนผู้เข้าแข่งขันออนไลน์ (Online Registration)</span>
+                        </label>
+                        <p className="text-[10px] text-gray-500 leading-normal ml-6">
+                          หากเปิดใช้งาน จะมีปุ่มสำหรับให้ผู้เข้าแข่งขันลงทะเบียนสมัครเข้าร่วมการประกวดได้ด้วยตัวเองจากหน้าเข้าสู่ระบบกิจกรรม โดยรองรับทั้งประเภทบุคคลและประเภททีม
+                        </p>
+                      </div>
+
                       <div>
                         <h4 className="font-bold text-primary text-xs uppercase mb-3">เลือกรูปแบบการจัดวาง (Template)</h4>
                         <div className="grid grid-cols-1 gap-3">
@@ -3423,6 +3614,84 @@ const AdminDashboard = () => {
                 <button
                   type="button"
                   onClick={() => setShowEditJudgeModal(false)}
+                  className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-all"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="submit"
+                  className="py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-semibold transition-all shadow"
+                >
+                  บันทึกข้อมูล
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- ADD/EDIT STAFF MODAL --- */}
+      {showStaffModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 font-sans">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 hover-scale">
+            <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">
+              {isEditingStaff ? 'แก้ไขข้อมูลเจ้าหน้าที่' : 'ลงทะเบียนเจ้าหน้าที่ใหม่'}
+            </h3>
+            <form onSubmit={handleSaveStaff} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 mb-1">ชื่อ-นามสกุลจริง</label>
+                <input
+                  type="text"
+                  required
+                  value={staffForm.fullname}
+                  onChange={(e) => setStaffForm({ ...staffForm, fullname: e.target.value })}
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                  placeholder="ตัวอย่าง: นายธนพล มั่นคง"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 mb-1">ชื่อผู้ใช้งาน (Username)</label>
+                <input
+                  type="text"
+                  required
+                  value={staffForm.username}
+                  onChange={(e) => setStaffForm({ ...staffForm, username: e.target.value })}
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                  placeholder="ตัวอย่าง: staff_thanapon"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                  รหัสผ่าน {isEditingStaff && <span className="text-gray-400 font-normal text-[10px]">(ปล่อยว่างหากไม่ต้องการเปลี่ยน)</span>}
+                </label>
+                <input
+                  type="password"
+                  required={!isEditingStaff}
+                  value={staffForm.password || ''}
+                  onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                  placeholder={isEditingStaff ? "ป้อนรหัสผ่านใหม่เพื่อแก้ไข" : "ความยาวขั้นต่ำ 6 ตัวอักษร"}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 mb-1">สถานะการใช้งาน</label>
+                <select
+                  value={staffForm.status}
+                  onChange={(e) => setStaffForm({ ...staffForm, status: e.target.value })}
+                  className="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none bg-white font-semibold text-gray-700"
+                >
+                  <option value="active">เปิดใช้งาน (Active)</option>
+                  <option value="blocked">ระงับใช้งาน (Blocked)</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end space-x-3 border-t pt-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowStaffModal(false)}
                   className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-all"
                 >
                   ยกเลิก

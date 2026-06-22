@@ -11,7 +11,7 @@ const AdminRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
 
   if (loading) return null;
-  if (!user || user.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'staff')) {
     return <Navigate to="/login" replace />;
   }
   return children;
@@ -44,7 +44,7 @@ const RootRedirect = () => {
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
   
-  if (user.role === 'admin') {
+  if (user.role === 'admin' || user.role === 'staff') {
     return <Navigate to="/admin" replace />;
   } else {
     return <Navigate to="/judge" replace />;

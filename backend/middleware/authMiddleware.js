@@ -22,6 +22,13 @@ const protect = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'staff')) {
+    return next();
+  }
+  return res.status(403).json({ message: 'Access denied: Administrators and Staff only' });
+};
+
+const isSuperAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     return next();
   }
@@ -35,4 +42,4 @@ const isJudge = (req, res, next) => {
   return res.status(403).json({ message: 'Access denied: Judges only' });
 };
 
-module.exports = { protect, isAdmin, isJudge };
+module.exports = { protect, isAdmin, isSuperAdmin, isJudge };

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, isAdmin } = require('../middleware/authMiddleware');
+const { protect, isAdmin, isSuperAdmin } = require('../middleware/authMiddleware');
 const {
   getDashboardStats,
   getActivities,
@@ -19,7 +19,11 @@ const {
   deleteParticipant,
   assignJudges,
   getSystemSettings,
-  updateSystemSettings
+  updateSystemSettings,
+  getStaff,
+  createStaff,
+  updateStaff,
+  deleteStaff
 } = require('../controllers/adminController');
 
 // All routes here require admin privileges
@@ -49,6 +53,15 @@ router.route('/judges/:id')
 
 router.put('/judges/:id/status', updateJudgeStatus);
 router.put('/judges/:id/reset-password', resetJudgePassword);
+
+// Staff management routes (Super Admin only)
+router.route('/staff')
+  .get(isSuperAdmin, getStaff)
+  .post(isSuperAdmin, createStaff);
+
+router.route('/staff/:id')
+  .put(isSuperAdmin, updateStaff)
+  .delete(isSuperAdmin, deleteStaff);
 
 const upload = require('../middleware/uploadMiddleware');
 

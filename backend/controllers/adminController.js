@@ -372,6 +372,11 @@ const deleteActivity = async (req, res, next) => {
   try {
     const hasExistingScores = await hasScores(activityId);
 
+    if (hasExistingScores && req.user.role === 'staff') {
+      res.status(403);
+      throw new Error('Staff users are not permitted to delete activities with submitted scores.');
+    }
+
     if (hasExistingScores && !force) {
       res.status(400);
       throw new Error('Cannot delete activity with submitted scores. Please Archive it instead.');
@@ -778,6 +783,125 @@ const updateSystemSettings = async (req, res, next) => {
   }
 };
 
+// @desc    Get all staff users
+// @route   GET /api/admin/staff
+// @access  Private/Admin (Super Admin only)
+const getStaff = async (req, res, next) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT id, username, fullname, role, status, created_at FROM users 
+       WHERE role = "staff" 
+       ORDER BY fullname ASC`
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Create a new staff user
+// @route   POST /api/admin/staff
+// @access  Private/Admin (Super Admin only)
+const createStaff = async (req, res, next) => {
+  const { username, password, fullname } = req.body;
+
+  try {
+    if (!username || !password || !fullname) {
+      res.status(400);
+      throw new Error('กรุณาระบุข้อมูลให้ครบถ้วน (ชื่อผู้ใช้, รหัสผ่าน, และชื่อ-นามสกุล)');
+    }
+
+    // Check unique username
+    const [existing] = await db.query('SELECT id FROM users WHERE username = ?', [username]);
+    if (existing.length > 0) {
+      res.status(400);
+      throw new Error('ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    const [result] = await db.query(
+      `INSERT INTO users (username, password_hash, fullname, role, status)
+       VALUES (?, ?, ?, 'staff', 'active')`,
+      [username, password_hash, fullname]
+    );
+
+    res.status(201).json({ id: result.insertId, message: 'เพิ่มเจ้าหน้าที่เรียบร้อยแล้ว' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update a staff user
+// @route   PUT /api/admin/staff/:id
+// @access  Private/Admin (Super Admin only)
+const updateStaff = async (req, res, next) => {
+  const staffId = req.params.id;
+  const { username, password, fullname, status } = req.body;
+
+  try {
+    if (!fullname || !username) {
+      res.status(400);
+      throw new Error('กรุณาระบุชื่อ-นามสกุล และชื่อผู้ใช้');
+    }
+
+    // Check unique username excluding current user
+    const [existing] = await db.query('SELECT id FROM users WHERE username = ? AND id != ?', [username, staffId]);
+    if (existing.length > 0) {
+      res.status(400);
+      throw new Error('ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว');
+    }
+
+    let query = 'UPDATE users SET username = ?, fullname = ?, status = ?';
+    const params = [username, fullname, status || 'active'];
+
+    if (password && password.trim().length > 0) {
+      const salt = await bcrypt.genSalt(10);
+      const password_hash = await bcrypt.hash(password, salt);
+      query += ', password_hash = ?';
+      params.push(password_hash);
+    }
+
+    query += ' WHERE id = ? AND role = "staff"';
+    params.push(staffId);
+
+    const [result] = await db.query(query, params);
+    if (result.affectedRows === 0) {
+      res.status(404);
+      throw new Error('ไม่พบข้อมูลเจ้าหน้าที่');
+    }
+
+    res.json({ message: 'แก้ไขข้อมูลเจ้าหน้าที่เรียบร้อยแล้ว' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete a staff user
+// @route   DELETE /api/admin/staff/:id
+// @access  Private/Admin (Super Admin only)
+const deleteStaff = async (req, res, next) => {
+  const staffId = req.params.id;
+  try {
+    // Check if they created any activities
+    const [activities] = await db.query('SELECT COUNT(*) as count FROM activities WHERE created_by = ?', [staffId]);
+    if (activities[0].count > 0) {
+      res.status(400);
+      throw new Error('ไม่สามารถลบเจ้าหน้าที่รายนี้ได้เนื่องจากมีกิจกรรมที่สร้างขึ้นโดยเจ้าหน้าที่รายนี้อยู่ในระบบ');
+    }
+
+    const [result] = await db.query('DELETE FROM users WHERE id = ? AND role = "staff"', [staffId]);
+    if (result.affectedRows === 0) {
+      res.status(404);
+      throw new Error('ไม่พบข้อมูลเจ้าหน้าที่');
+    }
+    res.json({ message: 'ลบเจ้าหน้าที่เรียบร้อยแล้ว' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getActivities,
@@ -796,5 +920,9 @@ module.exports = {
   deleteParticipant,
   assignJudges,
   getSystemSettings,
-  updateSystemSettings
+  updateSystemSettings,
+  getStaff,
+  createStaff,
+  updateStaff,
+  deleteStaff
 };

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `username` VARCHAR(50) UNIQUE NOT NULL,
   `password_hash` VARCHAR(255) NOT NULL,
   `fullname` VARCHAR(100) NOT NULL,
-  `role` ENUM('admin', 'judge') NOT NULL DEFAULT 'judge',
+  `role` ENUM('admin', 'staff', 'judge') NOT NULL DEFAULT 'judge',
   `institution_code` VARCHAR(50) DEFAULT NULL, -- For COI (Conflict of Interest) checks
   `status` ENUM('active', 'disabled') NOT NULL DEFAULT 'active', -- Do not hard delete judges
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

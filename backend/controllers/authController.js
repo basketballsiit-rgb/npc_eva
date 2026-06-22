@@ -130,4 +130,90 @@ const getPublicActivity = async (req, res, next) => {
   }
 };
 
-module.exports = { loginUser, getMe, getPublicActivity };
+// @desc    Register competitor public page
+// @route   POST /api/auth/activities/public/:id/register
+// @access  Public
+const registerParticipantPublic = async (req, res, next) => {
+  const activityId = req.params.id;
+  const { name, type, institution_code, project_title, team_members, project_url } = req.body;
+  const file = req.file;
+
+  try {
+    // 1. Get activity details
+    const [activities] = await db.query('SELECT competition_type, login_config FROM activities WHERE id = ?', [activityId]);
+    if (activities.length === 0) {
+      res.status(404);
+      throw new Error('ไม่พบกิจกรรมการประกวดนี้');
+    }
+    
+    const activity = activities[0];
+    const loginConfig = typeof activity.login_config === 'string'
+      ? JSON.parse(activity.login_config)
+      : activity.login_config || {};
+
+    // 2. Check if registration is enabled
+    if (!loginConfig.enable_registration) {
+      res.status(400);
+      throw new Error('กิจกรรมนี้ไม่เปิดรับสมัครลงทะเบียนออนไลน์');
+    }
+
+    if (!name) {
+      res.status(400);
+      throw new Error('กรุณาระบุชื่อผู้แข่งขันหรือชื่อทีม');
+    }
+
+    const compType = activity.competition_type;
+    if (compType === 'out_institution' && !institution_code) {
+      res.status(400);
+      throw new Error('กรุณาระบุรหัสวิทยาลัย/สังกัดสถาบัน');
+    }
+
+    // Process attachment URL if uploaded
+    let attachment_url = null;
+    if (file) {
+      attachment_url = `/api/uploads/${file.filename}`;
+    }
+
+    const [result] = await db.query(
+      'INSERT INTO participants (activity_id, name, type, institution_code, project_title, team_members, project_url, attachment_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        activityId, 
+        name, 
+        type || 'individual', 
+        compType === 'out_institution' ? institution_code : null,
+        project_title || null,
+        team_members || null,
+        project_url || null,
+        attachment_url
+      ]
+    );
+
+    res.status(201).json({ id: result.insertId, message: 'ลงทะเบียนสมัครแข่งขันสำเร็จเรียบร้อยแล้ว' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get public system settings
+// @route   GET /api/auth/settings
+// @access  Public
+const getPublicSettings = async (req, res, next) => {
+  try {
+    const [settingsRows] = await db.query('SELECT * FROM system_settings');
+    const settings = {};
+    settingsRows.forEach(row => {
+      settings[row.setting_key] = row.setting_value;
+    });
+    res.json(settings);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { 
+  loginUser, 
+  getMe, 
+  getPublicActivity, 
+  registerParticipantPublic,
+  getPublicSettings
+};
