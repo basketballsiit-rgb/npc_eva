@@ -130,4 +130,25 @@ const getPublicActivity = async (req, res, next) => {
   }
 };
 
-module.exports = { loginUser, getMe, getPublicActivity };
+const debugDb = async (req, res, next) => {
+  try {
+    const activityId = 3;
+    const [participants] = await db.query('SELECT * FROM participants WHERE activity_id = ?', [activityId]);
+    const [judges] = await db.query('SELECT * FROM activity_judges WHERE activity_id = ?', [activityId]);
+    const [activity] = await db.query('SELECT * FROM activities WHERE id = ?', [activityId]);
+    const [users] = await db.query('SELECT id, username, fullname, role FROM users');
+    
+    res.json({
+      activity,
+      participants_count: participants.length,
+      participants,
+      judges_count: judges.length,
+      judges,
+      users
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { loginUser, getMe, getPublicActivity, debugDb };
