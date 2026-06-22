@@ -445,7 +445,7 @@ const AdminDashboard = () => {
       return (
         <div key={node.id} className="space-y-2">
           <div className={`flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 p-3 rounded-lg border hover:shadow-sm transition-all ${depthClass}`}>
-            <div className="flex-1">
+            <div className="flex-1 space-y-1">
               <input
                 type="text"
                 required
@@ -454,6 +454,15 @@ const AdminDashboard = () => {
                 onChange={(e) => handleCriteriaNodeChange(node.id, 'name', e.target.value)}
                 className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white font-semibold"
               />
+              {!hasChildren && (
+                <textarea
+                  placeholder="คำอธิบายเกณฑ์ Rubric หรือรายละเอียดการให้คะแนนเพิ่มเติม (ทางเลือก)"
+                  value={node.description || ''}
+                  onChange={(e) => handleCriteriaNodeChange(node.id, 'description', e.target.value)}
+                  rows={1}
+                  className="w-full border rounded-lg p-1.5 text-[10px] text-gray-500 focus:ring-1 focus:ring-primary focus:outline-none bg-white resize-y min-h-[1.8rem] font-sans"
+                />
+              )}
             </div>
 
             <div className="w-full sm:w-28 flex items-center space-x-1">

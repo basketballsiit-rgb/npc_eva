@@ -707,6 +707,12 @@ const JudgeDashboard = () => {
                                 <span className="text-xs font-black text-gray-500">คะแนนเต็ม: {node.max_score}</span>
                               </div>
 
+                              {node.description && (
+                                <div className="mt-1.5 mb-2.5 text-[10px] text-gray-600 bg-info/5 border border-info/10 p-2 rounded-lg leading-relaxed whitespace-pre-line font-sans">
+                                  <strong>💡 คำอธิบายเกณฑ์ (Rubric):</strong> {node.description}
+                                </div>
+                              )}
+
                               <div className="flex items-center mt-3">
                                 <input
                                   type="number"
