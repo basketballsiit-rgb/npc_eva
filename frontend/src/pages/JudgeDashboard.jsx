@@ -728,7 +728,7 @@ const JudgeDashboard = () => {
                                     .slice()
                                     .sort((a, b) => b.score - a.score)
                                     .map((opt, optIdx) => {
-                                      const isSelected = scoresForm[node.id] === opt.score;
+                                      const isSelected = scoresForm[node.id] !== undefined && scoresForm[node.id] !== '' && Number(scoresForm[node.id]) === Number(opt.score);
                                       return (
                                         <label
                                           key={optIdx}

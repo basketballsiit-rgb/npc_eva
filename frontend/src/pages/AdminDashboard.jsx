@@ -354,8 +354,17 @@ const AdminDashboard = () => {
   };
 
   const handleCriteriaNodeChange = (nodeId, field, value) => {
-    const parsedValue = (field === 'max_score' || field === 'weight') ? (parseFloat(value) || 0) : value;
-    const updatedCriteria = updateCriteriaNode(activityForm.criteria, nodeId, field, parsedValue);
+    let updatedCriteria = activityForm.criteria;
+    if (typeof field === 'object' && field !== null) {
+      Object.keys(field).forEach(f => {
+        const val = field[f];
+        const parsedValue = (f === 'max_score' || f === 'weight') ? (parseFloat(val) || 0) : val;
+        updatedCriteria = updateCriteriaNode(updatedCriteria, nodeId, f, parsedValue);
+      });
+    } else {
+      const parsedValue = (field === 'max_score' || field === 'weight') ? (parseFloat(value) || 0) : value;
+      updatedCriteria = updateCriteriaNode(updatedCriteria, nodeId, field, parsedValue);
+    }
     setActivityForm({ ...activityForm, criteria: updatedCriteria });
   };
 
@@ -521,14 +530,13 @@ const AdminDashboard = () => {
                           { score: 5, label: 'พอใช้ (ผลงานปานกลาง ทั่วไป)' },
                           { score: 0, label: 'ปรับปรุง (ผลงานไม่ผ่านเกณฑ์)' }
                         ] : [];
-                        
-                        // Set options and type
-                        handleCriteriaNodeChange(node.id, 'type', newType);
-                        handleCriteriaNodeChange(node.id, 'rubric_options', defaultOptions);
-                        
-                        // Set max score
                         const newMax = newType === 'rubric' ? 10 : 10;
-                        handleCriteriaNodeChange(node.id, 'max_score', newMax);
+                        
+                        handleCriteriaNodeChange(node.id, {
+                          type: newType,
+                          rubric_options: defaultOptions,
+                          max_score: newMax
+                        });
                       }}
                       className="text-[10px] bg-white border rounded p-1 font-semibold text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
                     >
@@ -556,20 +564,23 @@ const AdminDashboard = () => {
                             }
                             return o;
                           });
-                          handleCriteriaNodeChange(node.id, 'rubric_options', updatedOpts);
                           
-                          if (field === 'score') {
-                            const maxScore = updatedOpts.length > 0 ? Math.max(...updatedOpts.map(o => o.score), 0) : 0;
-                            handleCriteriaNodeChange(node.id, 'max_score', maxScore);
-                          }
+                          const maxScore = updatedOpts.length > 0 ? Math.max(...updatedOpts.map(o => o.score), 0) : 0;
+                          
+                          handleCriteriaNodeChange(node.id, {
+                            rubric_options: updatedOpts,
+                            max_score: maxScore
+                          });
                         };
 
                         const removeOption = () => {
                           const updatedOpts = (node.rubric_options || []).filter((_, idx) => idx !== optIdx);
-                          handleCriteriaNodeChange(node.id, 'rubric_options', updatedOpts);
-                          
                           const maxScore = updatedOpts.length > 0 ? Math.max(...updatedOpts.map(o => o.score), 0) : 0;
-                          handleCriteriaNodeChange(node.id, 'max_score', maxScore);
+                          
+                          handleCriteriaNodeChange(node.id, {
+                            rubric_options: updatedOpts,
+                            max_score: maxScore
+                          });
                         };
 
                         return (
@@ -607,10 +618,12 @@ const AdminDashboard = () => {
                         const lastScore = currentOpts.length > 0 ? currentOpts[currentOpts.length - 1].score : 10;
                         const newScore = Math.max(lastScore - 2, 0);
                         const updatedOpts = [...currentOpts, { score: newScore, label: '' }];
-                        handleCriteriaNodeChange(node.id, 'rubric_options', updatedOpts);
-                        
                         const maxScore = Math.max(...updatedOpts.map(o => o.score), 0);
-                        handleCriteriaNodeChange(node.id, 'max_score', maxScore);
+                        
+                        handleCriteriaNodeChange(node.id, {
+                          rubric_options: updatedOpts,
+                          max_score: maxScore
+                        });
                       }}
                       className="py-1 px-2.5 bg-primary/10 hover:bg-primary/20 text-primary text-[9px] font-bold rounded transition-all"
                     >
