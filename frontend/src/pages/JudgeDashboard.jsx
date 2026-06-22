@@ -5,7 +5,7 @@ import { api, getUploadUrl } from '../utils/api';
 import Swal from 'sweetalert2';
 import { 
   LogOut, ClipboardList, History, Award, BookOpen, 
-  ChevronRight, ArrowLeft, Star, FileText, CheckCircle, Clock, Printer 
+  ChevronRight, ArrowLeft, Star, FileText, CheckCircle, Clock, Printer, Users
 } from 'lucide-react';
 
 const JudgeDashboard = () => {
@@ -354,7 +354,7 @@ const JudgeDashboard = () => {
             {(user?.role === 'admin' || isHeadJudge) && (
               <button
                 onClick={() => {
-                  window.open(`/print-report/${activityId}`, '_blank');
+                  window.open(`${import.meta.env.BASE_URL}print-report/${activityId}`, '_blank');
                 }}
                 className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm transition-all text-primary-soft hover:bg-primary/20 hover:text-white"
               >
@@ -474,92 +474,100 @@ const JudgeDashboard = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {act.participants.map(part => (
-                        <div 
-                          key={part.id} 
-                          className={`p-4 rounded-xl border flex flex-col justify-between min-h-[10.5rem] h-auto transition-all ${
-                            part.evaluated 
-                              ? 'bg-primary-soft/30 border-primary-light/20' 
-                              : 'bg-white border-gray-200 hover:border-primary/40 hover:shadow-sm'
-                          }`}
-                        >
-                          <div>
-                            <div className="flex items-start justify-between">
-                              <span className="text-[10px] text-gray-500 font-bold tracking-wide uppercase flex items-center gap-1">
-                                <span>{part.type === 'team' ? '👥 ทีม' : '👤 บุคคล'}</span>
-                                {act.competition_type === 'out_institution' && part.institution_code && (
-                                  <span className="bg-gray-100 text-gray-600 px-1 rounded font-mono font-bold">({part.institution_code})</span>
+                    {act.participants && act.participants.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {act.participants.map(part => (
+                          <div 
+                            key={part.id} 
+                            className={`p-4 rounded-xl border flex flex-col justify-between min-h-[10.5rem] h-auto transition-all ${
+                              part.evaluated 
+                                ? 'bg-primary-soft/30 border-primary-light/20' 
+                                : 'bg-white border-gray-200 hover:border-primary/40 hover:shadow-sm'
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-start justify-between">
+                                <span className="text-[10px] text-gray-500 font-bold tracking-wide uppercase flex items-center gap-1">
+                                  <span>{part.type === 'team' ? '👥 ทีม' : '👤 บุคคล'}</span>
+                                  {act.competition_type === 'out_institution' && part.institution_code && (
+                                    <span className="bg-gray-100 text-gray-600 px-1 rounded font-mono font-bold">({part.institution_code})</span>
+                                  )}
+                                </span>
+                                {part.evaluated ? (
+                                  <span className="flex items-center text-xs text-green-700 font-semibold bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
+                                    <CheckCircle className="w-3 h-3 mr-1" /> ประเมินแล้ว
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center text-xs text-yellow-700 font-semibold bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-200">
+                                    <Clock className="w-3 h-3 mr-1" /> รอดำเนินการ
+                                  </span>
                                 )}
-                              </span>
-                              {part.evaluated ? (
-                                <span className="flex items-center text-xs text-green-700 font-semibold bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
-                                  <CheckCircle className="w-3 h-3 mr-1" /> ประเมินแล้ว
-                                </span>
-                              ) : (
-                                <span className="flex items-center text-xs text-yellow-700 font-semibold bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-200">
-                                  <Clock className="w-3 h-3 mr-1" /> รอดำเนินการ
-                                </span>
+                              </div>
+                              <h4 className="text-sm font-bold text-gray-800 mt-2 line-clamp-1">{part.name}</h4>
+
+                              {part.project_title && (
+                                <div className="text-[11px] text-primary-dark font-semibold mt-1 truncate">
+                                  🏆 ผลงาน: <span className="text-gray-600 font-normal">{part.project_title}</span>
+                                </div>
+                              )}
+
+                              {part.type === 'team' && part.team_members && (
+                                <div className="text-[10px] text-gray-500 mt-1 line-clamp-1">
+                                  <span className="font-bold">สมาชิก:</span> {part.team_members}
+                                </div>
+                              )}
+
+                              {(part.project_url || part.attachment_url) && (
+                                <div className="flex items-center gap-2 mt-2">
+                                  {part.project_url && (
+                                    <a
+                                      href={part.project_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[9px] text-info font-bold bg-info/5 border border-info/10 px-1.5 py-0.5 rounded"
+                                    >
+                                      🔗 ลิงก์
+                                    </a>
+                                  )}
+                                  {part.attachment_url && (
+                                    <a
+                                      href={getUploadUrl(part.attachment_url)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[9px] text-success font-bold bg-success/5 border border-success/10 px-1.5 py-0.5 rounded"
+                                    >
+                                      📁 ไฟล์แนบ
+                                    </a>
+                                  )}
+                                </div>
                               )}
                             </div>
-                            <h4 className="text-sm font-bold text-gray-800 mt-2 line-clamp-1">{part.name}</h4>
 
-                            {part.project_title && (
-                              <div className="text-[11px] text-primary-dark font-semibold mt-1 truncate">
-                                🏆 ผลงาน: <span className="text-gray-600 font-normal">{part.project_title}</span>
-                              </div>
-                            )}
-
-                            {part.type === 'team' && part.team_members && (
-                              <div className="text-[10px] text-gray-500 mt-1 line-clamp-1">
-                                <span className="font-bold">สมาชิก:</span> {part.team_members}
-                              </div>
-                            )}
-
-                            {(part.project_url || part.attachment_url) && (
-                              <div className="flex items-center gap-2 mt-2">
-                                {part.project_url && (
-                                  <a
-                                    href={part.project_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[9px] text-info font-bold bg-info/5 border border-info/10 px-1.5 py-0.5 rounded"
-                                  >
-                                    🔗 ลิงก์
-                                  </a>
-                                )}
-                                {part.attachment_url && (
-                                  <a
-                                    href={getUploadUrl(part.attachment_url)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[9px] text-success font-bold bg-success/5 border border-success/10 px-1.5 py-0.5 rounded"
-                                  >
-                                    📁 ไฟล์แนบ
-                                  </a>
-                                )}
-                              </div>
-                            )}
+                            <div className="flex justify-between items-end mt-3 border-t pt-2.5">
+                              {part.evaluated ? (
+                                <div className="w-full flex justify-between items-center">
+                                  <span className="text-[10px] text-gray-400 font-semibold">คะแนนรวมที่ประเมิน</span>
+                                  <span className="text-base font-black text-primary-dark">{part.total_score}</span>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => handleOpenGrading(act, part)}
+                                  className="w-full py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg text-xs font-bold transition-all shadow flex items-center justify-center"
+                                >
+                                  {user?.role === 'admin' ? 'ดูเกณฑ์การตัดสิน' : 'เริ่มให้คะแนนการตัดสิน'} <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                                </button>
+                              )}
+                            </div>
                           </div>
-
-                          <div className="flex justify-between items-end mt-3 border-t pt-2.5">
-                            {part.evaluated ? (
-                              <div className="w-full flex justify-between items-center">
-                                <span className="text-[10px] text-gray-400 font-semibold">คะแนนรวมที่ประเมิน</span>
-                                <span className="text-base font-black text-primary-dark">{part.total_score}</span>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => handleOpenGrading(act, part)}
-                                className="w-full py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg text-xs font-bold transition-all shadow flex items-center justify-center"
-                              >
-                                {user?.role === 'admin' ? 'ดูเกณฑ์การตัดสิน' : 'เริ่มให้คะแนนการตัดสิน'} <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 bg-gray-50/50 rounded-xl border border-dashed border-gray-200 text-gray-400 text-xs font-semibold flex flex-col items-center justify-center p-6">
+                        <Users className="w-8 h-8 text-gray-300 mb-2" />
+                        <span>ยังไม่มีรายชื่อผู้เข้าแข่งขันลงทะเบียนในกิจกรรมนี้</span>
+                        <span className="text-[10px] text-gray-400 font-normal mt-1">กรุณาแจ้งผู้ดูแลระบบ (Admin) ให้ทำการเพิ่มผู้เข้าแข่งขันในระบบ</span>
+                      </div>
+                    )}
                   </div>
                 ))}
 
@@ -795,7 +803,7 @@ const JudgeDashboard = () => {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => window.open(`/print-report/${activityId}`, '_blank')}
+                      onClick={() => window.open(`${import.meta.env.BASE_URL}print-report/${activityId}`, '_blank')}
                       className="py-1 px-3 bg-primary hover:bg-primary-dark text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
                     >
                       <Printer className="w-3.5 h-3.5" />

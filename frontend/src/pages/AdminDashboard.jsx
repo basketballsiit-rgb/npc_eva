@@ -1178,7 +1178,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <button
-              onClick={() => navigate(`/print-report/${comp.activity_id}`)}
+              onClick={() => window.open(`${import.meta.env.BASE_URL}print-report/${comp.activity_id}`, '_blank')}
               className="mt-4 py-2.5 bg-info hover:bg-info-dark text-white rounded-lg flex items-center justify-center text-sm font-semibold transition-all shadow"
             >
               <Printer className="w-4 h-4 mr-2" /> พิมพ์รายงานอย่างเป็นทางการ (A4)
@@ -1620,7 +1620,7 @@ const AdminDashboard = () => {
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          onClick={() => window.open(`/print-report/${selectedLiveReportActivityId}`, '_blank')}
+                          onClick={() => window.open(`${import.meta.env.BASE_URL}print-report/${selectedLiveReportActivityId}`, '_blank')}
                           className="py-2.5 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-bold flex items-center gap-1.5 transition-all shadow-md shrink-0"
                         >
                           <Printer className="w-4 h-4" />
@@ -2897,7 +2897,7 @@ const AdminDashboard = () => {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => window.open(`/print-report/${selectedActivity.id}`, '_blank')}
+                      onClick={() => window.open(`${import.meta.env.BASE_URL}print-report/${selectedActivity.id}`, '_blank')}
                       className="py-1 px-3 bg-primary hover:bg-primary-dark text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
                     >
                       <Printer className="w-3.5 h-3.5" />
