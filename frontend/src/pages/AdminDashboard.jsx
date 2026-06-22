@@ -776,7 +776,9 @@ const AdminDashboard = () => {
   };
 
   const handleCopyJudgeLink = (activityId) => {
-    const link = `${window.location.origin}/activities/${activityId}/login`;
+    const base = import.meta.env.BASE_URL || '/';
+    const cleanedBase = base.endsWith('/') ? base : `${base}/`;
+    const link = `${window.location.origin}${cleanedBase}activities/${activityId}/login`;
     navigator.clipboard.writeText(link);
     Swal.fire({
       icon: 'success',
