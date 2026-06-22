@@ -38,7 +38,7 @@
     background-color: #ffffff !important;
     color: #000000 !important;
     font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
-    font-size: 16pt !important;
+    font-size: 11pt !important;
     width: 100% !important;
     height: auto !important;
     margin: 0 !important;
@@ -47,26 +47,36 @@
 
   /* Sarabun heading size for print titles */
   .printable-document h1,
-  .printable-document h2,
   .print-heading {
     font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
-    font-size: 18pt !important;
+    font-size: 13pt !important;
     font-weight: bold !important;
+    margin-bottom: 2px !important;
+  }
+  .printable-document h2 {
+    font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
+    font-size: 11.5pt !important;
+    font-weight: bold !important;
+    margin-bottom: 2px !important;
   }
 
   /* All other text inside the document */
   .printable-document p,
   .printable-document span,
-  .printable-document div,
+  .printable-document div {
+    font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
+    font-size: 10.5pt !important;
+  }
+
   .printable-document td,
   .printable-document th {
     font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
-    font-size: 16pt !important;
+    font-size: 10pt !important;
   }
 
   @page {
     size: A4 portrait;
-    margin: 2cm 1.5cm 2cm 1.5cm;
+    margin: 1.2cm 1.2cm 1.2cm 1.2cm;
   }
 
   /* Reset document container margins and paddings for printing */
@@ -84,17 +94,41 @@
     border-collapse: collapse !important;
     width: 100% !important;
     color: #000000 !important;
+    margin-bottom: 8px !important;
   }
 
   th, td {
     border: 1px solid #000000 !important;
-    padding: 4px 6px !important;
+    padding: 3px 5px !important;
     text-align: center !important;
   }
 
   th {
     background-color: #f2f2f2 !important;
     font-weight: bold !important;
+  }
+
+  /* Optimize signature box sizes and spacings for print */
+  .printable-document .mt-6 {
+    margin-top: 10px !important;
+  }
+  .printable-document .pt-4 {
+    padding-top: 6px !important;
+  }
+  .printable-document .mb-5 {
+    margin-bottom: 6px !important;
+  }
+  .printable-document .mb-6 {
+    margin-bottom: 12px !important;
+  }
+  .printable-document .gap-y-6 {
+    row-gap: 8px !important;
+  }
+  .printable-document .w-60 {
+    width: 13.5rem !important;
+  }
+  .printable-document .w-48 {
+    width: 11rem !important;
   }
 
   /* Force page breaks cleanly */
