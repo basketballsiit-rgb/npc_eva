@@ -17,8 +17,10 @@ import {
   LogOut, LayoutDashboard, Trophy, Award, Users, BookOpen, Plus, 
   Trash2, Copy, Edit3, Settings, ShieldAlert, Key, UserPlus, 
   UserCheck, UserX, Printer, CheckCircle, Clock, Link,
-  Upload, Loader2, Shield, Calendar, MapPin, User, BarChart3
+  Upload, Loader2, Shield, Calendar, MapPin, User, BarChart3, QrCode
 } from 'lucide-react';
+import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
+import { createRoot as createReactRoot } from 'react-dom/client';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -936,10 +938,14 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleCopyJudgeLink = (activityId) => {
+  const getActivityLink = (activityId) => {
     const base = import.meta.env.BASE_URL || '/';
     const cleanedBase = base.endsWith('/') ? base : `${base}/`;
-    const link = `${window.location.origin}${cleanedBase}activities/${activityId}/login`;
+    return `${window.location.origin}${cleanedBase}activities/${activityId}/login`;
+  };
+
+  const handleCopyJudgeLink = (activityId) => {
+    const link = getActivityLink(activityId);
     navigator.clipboard.writeText(link);
     Swal.fire({
       icon: 'success',
@@ -950,6 +956,110 @@ const AdminDashboard = () => {
       showConfirmButton: false,
       timer: 2000,
       timerProgressBar: true
+    });
+  };
+
+  const handleShowQRCode = (activity) => {
+    const link = getActivityLink(activity.id);
+    const qrContainer = document.createElement('div');
+    qrContainer.id = 'swal-qr-container';
+
+    Swal.fire({
+      title: '',
+      html: `<div id="swal-qr-root"></div>`,
+      width: 480,
+      showConfirmButton: false,
+      showCloseButton: true,
+      customClass: {
+        popup: 'rounded-2xl'
+      },
+      didOpen: () => {
+        const root = document.getElementById('swal-qr-root');
+        if (!root) return;
+        root.innerHTML = `
+          <div style="text-align:center;padding:8px 0;">
+            <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:12px;padding:16px 20px;margin-bottom:20px;">
+              <p style="color:#fff;font-weight:800;font-size:16px;margin:0;">${activity.name}</p>
+              <p style="color:#e0e7ff;font-size:11px;margin:4px 0 0;">${activity.academic_year ? 'ปีการศึกษา ' + activity.academic_year : ''}</p>
+            </div>
+            <div style="display:inline-block;background:#fff;padding:20px;border-radius:16px;border:3px solid #e5e7eb;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+              <canvas id="qr-canvas"></canvas>
+            </div>
+            <p style="color:#6b7280;font-size:11px;margin:16px 0 6px;word-break:break-all;max-width:380px;margin-left:auto;margin-right:auto;">${link}</p>
+            <p style="color:#9ca3af;font-size:10px;margin:0 0 16px;">สแกน QR Code เพื่อเข้าสู่ระบบลงทะเบียน/ประเมิน</p>
+            <div style="display:flex;gap:10px;justify-content:center;">
+              <button id="qr-download-btn" style="padding:10px 20px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:transform 0.15s;"
+                onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'"
+              >📥 ดาวน์โหลด QR Code</button>
+              <button id="qr-copy-btn" style="padding:10px 20px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:transform 0.15s;"
+                onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'"
+              >📋 คัดลอกลิงก์</button>
+            </div>
+          </div>
+        `;
+
+        // Draw QR code on canvas
+        const canvas = document.getElementById('qr-canvas');
+        if (canvas) {
+          const tempDiv = document.createElement('div');
+          tempDiv.style.position = 'absolute';
+          tempDiv.style.left = '-9999px';
+          document.body.appendChild(tempDiv);
+          const tempRoot = createReactRoot(tempDiv);
+          tempRoot.render(
+            React.createElement(QRCodeCanvas, {
+              value: link,
+              size: 240,
+              level: 'H',
+              includeMargin: true,
+              id: 'qr-canvas-hidden'
+            })
+          );
+          setTimeout(() => {
+            const hiddenCanvas = document.getElementById('qr-canvas-hidden');
+            if (hiddenCanvas && canvas) {
+              canvas.width = hiddenCanvas.width;
+              canvas.height = hiddenCanvas.height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(hiddenCanvas, 0, 0);
+            }
+            // Download button
+            const dlBtn = document.getElementById('qr-download-btn');
+            if (dlBtn) {
+              dlBtn.addEventListener('click', () => {
+                const dataUrl = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = `QR_${activity.name.replace(/[^a-zA-Z0-9\u0e01-\u0e59]/g, '_')}.png`;
+                a.click();
+              });
+            }
+            // Cleanup temp
+            setTimeout(() => {
+              tempRoot.unmount();
+              document.body.removeChild(tempDiv);
+            }, 500);
+          }, 300);
+        }
+
+        // Copy button
+        const copyBtn = document.getElementById('qr-copy-btn');
+        if (copyBtn) {
+          copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(link);
+            copyBtn.innerHTML = '✅ คัดลอกแล้ว!';
+            copyBtn.style.background = '#dcfce7';
+            copyBtn.style.color = '#166534';
+            copyBtn.style.borderColor = '#86efac';
+            setTimeout(() => {
+              copyBtn.innerHTML = '📋 คัดลอกลิงก์';
+              copyBtn.style.background = '#f3f4f6';
+              copyBtn.style.color = '#374151';
+              copyBtn.style.borderColor = '#e5e7eb';
+            }, 1500);
+          });
+        }
+      }
     });
   };
 
@@ -1650,6 +1760,13 @@ const AdminDashboard = () => {
                               className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
                             >
                               <Link className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleShowQRCode(act)}
+                              title="แสดง QR Code สำหรับลงทะเบียน"
+                              className="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
+                            >
+                              <QrCode className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteActivity(act)}
