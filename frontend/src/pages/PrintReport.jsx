@@ -186,7 +186,6 @@ const PrintReport = () => {
                       <p className="font-bold">({j.fullname})</p>
                       <p className="text-gray-600">
                         {j.is_head_judge ? 'ประธานกรรมการ' : 'กรรมการผู้ประเมิน'}
-                        {j.institution_code ? ` (${j.institution_code})` : ''}
                       </p>
                     </div>
                   ))
@@ -201,7 +200,6 @@ const PrintReport = () => {
                         <p className="font-bold">({js.judge_name})</p>
                         <p className="text-gray-600">
                           {isHead ? 'ประธานกรรมการ' : 'กรรมการผู้ประเมิน'}
-                          {js.judge_institution ? ` (${js.judge_institution})` : ''}
                         </p>
                       </div>
                     );
