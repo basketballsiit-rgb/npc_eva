@@ -2350,9 +2350,12 @@ const AdminDashboard = () => {
 
                       {/* URL Background image field (Always shown, is background in temp 1&3, or direct content in temp 2) */}
                       <div>
-                        <label className="block text-xs font-bold uppercase text-gray-600 mb-1.5">
+                        <label className="block text-xs font-bold uppercase text-gray-600 mb-1">
                           {activityForm.login_config.template === 'template_2' ? 'ภาพแบนเนอร์เต็มแผงซ้ายมือ *' : 'ภาพพื้นหลังฝั่งซ้ายมือ (ทางเลือก)'}
                         </label>
+                        <div className="text-[10px] text-gray-400 mb-2">
+                          💡 แนะนำรูปภาพทรงแนวตั้ง อัตราส่วน 2:3 (เช่น ขนาด 800 x 1200 พิกเซล หรือ 1080 x 1620 พิกเซล) เพื่อการแสดงผลที่สมบูรณ์และครอบคลุมแผงซ้ายมือที่สุด
+                        </div>
                         {uploadingBanner ? (
                           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center bg-gray-50 h-24">
                             <div className="flex flex-col items-center space-y-2">
