@@ -185,9 +185,9 @@ const registerParticipantPublic = async (req, res, next) => {
         team_members || null,
         project_url || null,
         attachment_url,
-        department || null,
-        level || null,
-        year || null
+        (type || 'individual') === 'individual' ? (department || null) : null,
+        (type || 'individual') === 'individual' ? (level || null) : null,
+        (type || 'individual') === 'individual' ? (year || null) : null
       ]
     );
 

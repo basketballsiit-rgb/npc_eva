@@ -3183,49 +3183,51 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-gray-500 mb-1">แผนกวิชา</label>
-                      <select
-                        value={newParticipant.department}
-                        onChange={(e) => setNewParticipant({ ...newParticipant, department: e.target.value })}
-                        className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white cursor-pointer font-semibold"
-                      >
-                        <option value="">-- เลือกแผนกวิชา --</option>
-                        <option value="การบัญชี">การบัญชี</option>
-                        <option value="ช่างยนต์">ช่างยนต์</option>
-                        <option value="ช่างไฟฟ้า">ช่างไฟฟ้า</option>
-                        <option value="ช่างอิเล็กทรอนิกส์">ช่างอิเล็กทรอนิกส์</option>
-                        <option value="เทคโนโลยีสารสนเทศ">เทคโนโลยีสารสนเทศ</option>
-                        <option value="การตลาด">การตลาด</option>
-                      </select>
+                  {newParticipant.type === 'individual' && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">แผนกวิชา</label>
+                        <select
+                          value={newParticipant.department}
+                          onChange={(e) => setNewParticipant({ ...newParticipant, department: e.target.value })}
+                          className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white cursor-pointer font-semibold"
+                        >
+                          <option value="">-- เลือกแผนกวิชา --</option>
+                          <option value="การบัญชี">การบัญชี</option>
+                          <option value="ช่างยนต์">ช่างยนต์</option>
+                          <option value="ช่างไฟฟ้า">ช่างไฟฟ้า</option>
+                          <option value="ช่างอิเล็กทรอนิกส์">ช่างอิเล็กทรอนิกส์</option>
+                          <option value="เทคโนโลยีสารสนเทศ">เทคโนโลยีสารสนเทศ</option>
+                          <option value="การตลาด">การตลาด</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">ระดับชั้น</label>
+                        <select
+                          value={newParticipant.level}
+                          onChange={(e) => setNewParticipant({ ...newParticipant, level: e.target.value })}
+                          className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white cursor-pointer font-semibold"
+                        >
+                          <option value="">-- เลือกระดับชั้น --</option>
+                          <option value="ปวช">ปวช</option>
+                          <option value="ปวส">ปวส</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">ปีที่</label>
+                        <select
+                          value={newParticipant.year}
+                          onChange={(e) => setNewParticipant({ ...newParticipant, year: e.target.value })}
+                          className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white cursor-pointer font-semibold"
+                        >
+                          <option value="">-- เลือกปีที่ --</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                        </select>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-gray-500 mb-1">ระดับชั้น</label>
-                      <select
-                        value={newParticipant.level}
-                        onChange={(e) => setNewParticipant({ ...newParticipant, level: e.target.value })}
-                        className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white cursor-pointer font-semibold"
-                      >
-                        <option value="">-- เลือกระดับชั้น --</option>
-                        <option value="ปวช">ปวช</option>
-                        <option value="ปวส">ปวส</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-gray-500 mb-1">ปีที่</label>
-                      <select
-                        value={newParticipant.year}
-                        onChange={(e) => setNewParticipant({ ...newParticipant, year: e.target.value })}
-                        className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white cursor-pointer font-semibold"
-                      >
-                        <option value="">-- เลือกปีที่ --</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                      </select>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
