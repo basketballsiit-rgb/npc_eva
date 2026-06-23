@@ -23,7 +23,10 @@ const Login = () => {
     institution_code: '',
     project_title: '',
     team_members: '',
-    project_url: ''
+    project_url: '',
+    department: '',
+    level: '',
+    year: ''
   });
   const [attachmentFile, setAttachmentFile] = useState(null);
   const [systemSettings, setSystemSettings] = useState(null);
@@ -138,6 +141,9 @@ const Login = () => {
       formData.append('project_title', regForm.project_title);
       formData.append('team_members', regForm.team_members);
       formData.append('project_url', regForm.project_url);
+      formData.append('department', regForm.department);
+      formData.append('level', regForm.level);
+      formData.append('year', regForm.year);
       if (attachmentFile) {
         formData.append('attachment', attachmentFile);
       }
@@ -166,7 +172,10 @@ const Login = () => {
         institution_code: '',
         project_title: '',
         team_members: '',
-        project_url: ''
+        project_url: '',
+        department: '',
+        level: '',
+        year: ''
       });
       setAttachmentFile(null);
       setViewMode('login');
@@ -497,6 +506,53 @@ const Login = () => {
                   />
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">แผนกวิชา</label>
+                    <select
+                      value={regForm.department}
+                      onChange={(e) => setRegForm({ ...regForm, department: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold cursor-pointer bg-white"
+                      disabled={loading}
+                    >
+                      <option value="">-- เลือกแผนกวิชา --</option>
+                      <option value="การบัญชี">การบัญชี</option>
+                      <option value="ช่างยนต์">ช่างยนต์</option>
+                      <option value="ช่างไฟฟ้า">ช่างไฟฟ้า</option>
+                      <option value="ช่างอิเล็กทรอนิกส์">ช่างอิเล็กทรอนิกส์</option>
+                      <option value="เทคโนโลยีสารสนเทศ">เทคโนโลยีสารสนเทศ</option>
+                      <option value="การตลาด">การตลาด</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">ระดับชั้น</label>
+                    <select
+                      value={regForm.level}
+                      onChange={(e) => setRegForm({ ...regForm, level: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold cursor-pointer bg-white"
+                      disabled={loading}
+                    >
+                      <option value="">-- เลือกระดับชั้น --</option>
+                      <option value="ปวช">ปวช</option>
+                      <option value="ปวส">ปวส</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">ปีที่</label>
+                    <select
+                      value={regForm.year}
+                      onChange={(e) => setRegForm({ ...regForm, year: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold cursor-pointer bg-white"
+                      disabled={loading}
+                    >
+                      <option value="">-- เลือกปีที่ --</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                    </select>
+                  </div>
+                </div>
+
                 {activityInfo?.competition_type === 'out_institution' && (
                   <div>
                     <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
@@ -575,7 +631,10 @@ const Login = () => {
                         institution_code: '',
                         project_title: '',
                         team_members: '',
-                        project_url: ''
+                        project_url: '',
+                        department: '',
+                        level: '',
+                        year: ''
                       });
                       setAttachmentFile(null);
                     }}

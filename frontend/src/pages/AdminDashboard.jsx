@@ -109,7 +109,7 @@ const AdminDashboard = () => {
 
   const [showManageActivityModal, setShowManageActivityModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
-  const [newParticipant, setNewParticipant] = useState({ name: '', type: 'individual', institution_code: '', project_title: '', team_members: '', project_url: '', attachment_url: '' });
+  const [newParticipant, setNewParticipant] = useState({ name: '', type: 'individual', institution_code: '', project_title: '', team_members: '', project_url: '', attachment_url: '', department: '', level: '', year: '' });
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [manageTab, setManageTab] = useState('participants'); // 'participants' or 'report'
   const [liveReportData, setLiveReportData] = useState(null);
@@ -1121,14 +1121,17 @@ const AdminDashboard = () => {
       project_title: newParticipant.project_title || null,
       team_members: newParticipant.type === 'team' ? newParticipant.team_members : null,
       project_url: newParticipant.project_url || null,
-      attachment_url: newParticipant.attachment_url || null
+      attachment_url: newParticipant.attachment_url || null,
+      department: newParticipant.department || null,
+      level: newParticipant.level || null,
+      year: newParticipant.year || null
     };
 
     try {
       const result = await api.post(`/api/admin/activities/${selectedActivity.id}/participants`, payload);
       const updatedParts = [...selectedActivity.participants, { id: result.id, ...payload }];
       setSelectedActivity({ ...selectedActivity, participants: updatedParts });
-      setNewParticipant({ name: '', type: 'individual', institution_code: '', project_title: '', team_members: '', project_url: '', attachment_url: '' });
+      setNewParticipant({ name: '', type: 'individual', institution_code: '', project_title: '', team_members: '', project_url: '', attachment_url: '', department: '', level: '', year: '' });
       Swal.fire('สำเร็จ!', 'เพิ่มรายชื่อผู้แข่งขันเรียบร้อยแล้ว', 'success');
     } catch (err) {
       Swal.fire('ข้อผิดพลาด', err.message, 'error');
@@ -3180,6 +3183,50 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 mb-1">แผนกวิชา</label>
+                      <select
+                        value={newParticipant.department}
+                        onChange={(e) => setNewParticipant({ ...newParticipant, department: e.target.value })}
+                        className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white cursor-pointer font-semibold"
+                      >
+                        <option value="">-- เลือกแผนกวิชา --</option>
+                        <option value="การบัญชี">การบัญชี</option>
+                        <option value="ช่างยนต์">ช่างยนต์</option>
+                        <option value="ช่างไฟฟ้า">ช่างไฟฟ้า</option>
+                        <option value="ช่างอิเล็กทรอนิกส์">ช่างอิเล็กทรอนิกส์</option>
+                        <option value="เทคโนโลยีสารสนเทศ">เทคโนโลยีสารสนเทศ</option>
+                        <option value="การตลาด">การตลาด</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 mb-1">ระดับชั้น</label>
+                      <select
+                        value={newParticipant.level}
+                        onChange={(e) => setNewParticipant({ ...newParticipant, level: e.target.value })}
+                        className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white cursor-pointer font-semibold"
+                      >
+                        <option value="">-- เลือกระดับชั้น --</option>
+                        <option value="ปวช">ปวช</option>
+                        <option value="ปวส">ปวส</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 mb-1">ปีที่</label>
+                      <select
+                        value={newParticipant.year}
+                        onChange={(e) => setNewParticipant({ ...newParticipant, year: e.target.value })}
+                        className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none bg-white cursor-pointer font-semibold"
+                      >
+                        <option value="">-- เลือกปีที่ --</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                      </select>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[10px] font-bold text-gray-500 mb-1">ชื่อผลงาน / หัวข้อประกวด (ถ้ามี)</label>
@@ -3291,6 +3338,19 @@ const AdminDashboard = () => {
                             {selectedActivity.competition_type === 'out_institution' && part.institution_code && (
                               <span className="text-[10px] bg-gray-200/70 text-gray-600 px-1.5 py-0.5 rounded font-mono font-bold">
                                 {part.institution_code}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1 font-sans">
+                            {part.department && (
+                              <span className="text-[9px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100 font-semibold">
+                                แผนก: {part.department}
+                              </span>
+                            )}
+                            {part.level && (
+                              <span className="text-[9px] bg-violet-50 text-violet-700 px-1.5 py-0.5 rounded border border-violet-100 font-semibold">
+                                ระดับ: {part.level} {part.year ? `ปี ${part.year}` : ''}
                               </span>
                             )}
                           </div>

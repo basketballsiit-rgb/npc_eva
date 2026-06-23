@@ -43,7 +43,7 @@ const getLeaderboard = async (req, res, next) => {
 
     // 2. Fetch all participants for this activity
     const [participants] = await db.query(
-      'SELECT id, name, type, institution_code, project_title, team_members, project_url, attachment_url FROM participants WHERE activity_id = ?',
+      'SELECT id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year FROM participants WHERE activity_id = ?',
       [activityId]
     );
 
@@ -111,6 +111,9 @@ const getLeaderboard = async (req, res, next) => {
         team_members: part.team_members,
         project_url: part.project_url,
         attachment_url: part.attachment_url,
+        department: part.department,
+        level: part.level,
+        year: part.year,
         final_score: finalScore,
         evaluations_count: partScores.length,
         judges_scores: judgeBreakdowns

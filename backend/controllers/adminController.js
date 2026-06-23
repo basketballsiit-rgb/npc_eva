@@ -135,7 +135,7 @@ const getActivityById = async (req, res, next) => {
 
     // Fetch participants
     const [participants] = await db.query(
-      'SELECT id, name, type, institution_code, project_title, team_members, project_url, attachment_url FROM participants WHERE activity_id = ?',
+      'SELECT id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year FROM participants WHERE activity_id = ?',
       [req.params.id]
     );
 
@@ -555,7 +555,7 @@ const resetJudgePassword = async (req, res, next) => {
 // @access  Private/Admin
 const addParticipant = async (req, res, next) => {
   const activityId = req.params.id;
-  const { name, type, institution_code, project_title, team_members, project_url, attachment_url } = req.body;
+  const { name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year } = req.body;
 
   try {
     if (!name) {
@@ -577,7 +577,7 @@ const addParticipant = async (req, res, next) => {
     }
 
     const [result] = await db.query(
-      'INSERT INTO participants (activity_id, name, type, institution_code, project_title, team_members, project_url, attachment_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO participants (activity_id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         activityId, 
         name, 
@@ -586,7 +586,10 @@ const addParticipant = async (req, res, next) => {
         project_title || null,
         team_members || null,
         project_url || null,
-        attachment_url || null
+        attachment_url || null,
+        department || null,
+        level || null,
+        year || null
       ]
     );
 
