@@ -1,4 +1,27 @@
+import Swal from 'sweetalert2';
+
 const API_URL = import.meta.env.VITE_API_URL || ''; // Supports custom production API endpoint, defaults to relative proxy
+
+let isRedirecting = false;
+
+const handleUnauthorized = () => {
+  if (!isRedirecting) {
+    isRedirecting = true;
+    localStorage.removeItem('npc_token');
+    localStorage.removeItem('npc_user');
+    
+    Swal.fire({
+      title: 'เซสชันหมดอายุ',
+      text: 'เซสชันการใช้งานของคุณหมดอายุหรือระบบได้รับการอัปเดต กรุณาเข้าสู่ระบบใหม่อีกครั้ง',
+      icon: 'warning',
+      confirmButtonColor: '#4A2C6D',
+      confirmButtonText: 'ตกลง'
+    }).then(() => {
+      window.location.href = '/login';
+    });
+  }
+  return new Promise(() => {}); // Never-resolving promise to block further execution in components
+};
 
 
 const request = async (method, path, body = null) => {
@@ -21,6 +44,11 @@ const request = async (method, path, body = null) => {
   }
 
   const response = await fetch(`${API_URL}${path}`, config);
+
+  if (response.status === 401 && !window.location.pathname.includes('/login')) {
+    return handleUnauthorized();
+  }
+
   const data = await response.json();
 
   if (!response.ok) {
@@ -50,6 +78,11 @@ export const api = {
       headers,
       body: formData
     });
+
+    if (response.status === 401 && !window.location.pathname.includes('/login')) {
+      return handleUnauthorized();
+    }
+
     const data = await response.json();
     if (!response.ok) {
       throw new Error(data.message || 'Failed to upload file');
