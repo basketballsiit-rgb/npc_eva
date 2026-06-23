@@ -59,7 +59,23 @@ const Login = () => {
       };
       fetchSettings();
     }
-  }, [activityId]);
+  }, [activityId]);  const getDefaultType = () => {
+    const regConfig = activityInfo?.login_config?.reg_config || {};
+    const allowInd = regConfig.allow_individual !== false;
+    const allowTeam = regConfig.allow_team !== false;
+    if (allowInd && !allowTeam) return 'individual';
+    if (!allowInd && allowTeam) return 'team';
+    return 'individual';
+  };
+
+  useEffect(() => {
+    if (activityInfo) {
+      setRegForm(prev => ({
+        ...prev,
+        type: getDefaultType()
+      }));
+    }
+  }, [activityInfo]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -190,7 +206,7 @@ const Login = () => {
       // Reset form and go back to login view
       setRegForm({
         name: '',
-        type: 'individual',
+        type: getDefaultType(),
         institution_code: '',
         project_title: '',
         team_members: '',
@@ -487,33 +503,43 @@ const Login = () => {
               </div>
 
               <form onSubmit={handleRegisterSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-2">ประเภทผู้เข้าแข่งขัน</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setRegForm({ ...regForm, type: 'individual' })}
-                      className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
-                        regForm.type === 'individual'
-                          ? 'bg-primary/10 border-primary text-primary shadow-sm'
-                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                      }`}
-                    >
-                      บุคคล (Individual)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRegForm({ ...regForm, type: 'team' })}
-                      className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
-                        regForm.type === 'team'
-                          ? 'bg-primary/10 border-primary text-primary shadow-sm'
-                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                      }`}
-                    >
-                      กลุ่ม / ทีม (Team)
-                    </button>
-                  </div>
-                </div>
+                {(() => {
+                  const regConfig = activityInfo?.login_config?.reg_config || {};
+                  const allowInd = regConfig.allow_individual !== false;
+                  const allowTeam = regConfig.allow_team !== false;
+                  if (allowInd && allowTeam) {
+                    return (
+                      <div>
+                        <label className="block text-xs font-bold uppercase text-gray-500 mb-2">ประเภทผู้เข้าแข่งขัน</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setRegForm({ ...regForm, type: 'individual' })}
+                            className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
+                              regForm.type === 'individual'
+                                ? 'bg-primary/10 border-primary text-primary shadow-sm'
+                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                            }`}
+                          >
+                            บุคคล (Individual)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setRegForm({ ...regForm, type: 'team' })}
+                            className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
+                              regForm.type === 'team'
+                                ? 'bg-primary/10 border-primary text-primary shadow-sm'
+                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                            }`}
+                          >
+                            กลุ่ม / ทีม (Team)
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
 
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
@@ -755,7 +781,7 @@ const Login = () => {
                       setViewMode('login');
                       setRegForm({
                         name: '',
-                        type: 'individual',
+                        type: getDefaultType(),
                         institution_code: '',
                         project_title: '',
                         team_members: '',

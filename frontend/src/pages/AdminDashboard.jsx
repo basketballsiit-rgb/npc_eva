@@ -78,7 +78,9 @@ const AdminDashboard = () => {
         show_project_title: true,
         show_project_url: true,
         show_attachment: true,
-        show_advisor: true
+        show_advisor: true,
+        allow_individual: true,
+        allow_team: true
       }
     },
     judges: []
@@ -300,7 +302,9 @@ const AdminDashboard = () => {
           show_project_title: true,
           show_project_url: true,
           show_attachment: true,
-          show_advisor: true
+          show_advisor: true,
+          allow_individual: true,
+          allow_team: true
         }
       },
       judges: []
@@ -331,7 +335,9 @@ const AdminDashboard = () => {
           show_project_title: true,
           show_project_url: true,
           show_attachment: true,
-          show_advisor: true
+          show_advisor: true,
+          allow_individual: true,
+          allow_team: true
         }
       };
       if (fullDetails.login_config) {
@@ -2734,6 +2740,49 @@ const AdminDashboard = () => {
                         </p>
                         {activityForm.login_config.enable_registration && (
                           <div className="bg-white p-3 rounded-lg border border-gray-200/80 space-y-2.5 ml-6 shadow-sm">
+                            <div className="text-[10px] font-bold text-primary border-b pb-1 mb-1">
+                              ประเภทผู้เข้าแข่งขันที่อนุญาตให้ลงทะเบียน
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-[10px] font-semibold text-gray-600 mb-2 pb-2 border-b border-gray-100">
+                              <label className="flex items-center space-x-2 cursor-pointer hover:text-gray-800">
+                                <input
+                                  type="checkbox"
+                                  checked={activityForm.login_config.reg_config?.allow_individual !== false}
+                                  onChange={(e) => {
+                                    const reg_config = activityForm.login_config.reg_config || {};
+                                    setActivityForm({
+                                      ...activityForm,
+                                      login_config: {
+                                        ...activityForm.login_config,
+                                        reg_config: { ...reg_config, allow_individual: e.target.checked }
+                                      }
+                                    });
+                                  }}
+                                  className="w-3.5 h-3.5 text-primary focus:ring-primary rounded border-gray-300"
+                                />
+                                <span>บุคคล (Individual)</span>
+                              </label>
+
+                              <label className="flex items-center space-x-2 cursor-pointer hover:text-gray-800">
+                                <input
+                                  type="checkbox"
+                                  checked={activityForm.login_config.reg_config?.allow_team !== false}
+                                  onChange={(e) => {
+                                    const reg_config = activityForm.login_config.reg_config || {};
+                                    setActivityForm({
+                                      ...activityForm,
+                                      login_config: {
+                                        ...activityForm.login_config,
+                                        reg_config: { ...reg_config, allow_team: e.target.checked }
+                                      }
+                                    });
+                                  }}
+                                  className="w-3.5 h-3.5 text-primary focus:ring-primary rounded border-gray-300"
+                                />
+                                <span>กลุ่ม / ทีม (Team)</span>
+                              </label>
+                            </div>
+
                             <div className="text-[10px] font-bold text-primary border-b pb-1 mb-1">
                               ตั้งค่าฟิลด์ที่จะแสดงในฟอร์มลงทะเบียน
                             </div>
