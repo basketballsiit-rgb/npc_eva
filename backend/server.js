@@ -9,6 +9,10 @@ const adminRoutes = require('./routes/adminRoutes');
 const judgeRoutes = require('./routes/judgeRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 
+// Run auto database migrations
+const runMigrations = require('./config/migrate');
+runMigrations();
+
 const app = express();
 const path = require('path');
 const fs = require('fs');
