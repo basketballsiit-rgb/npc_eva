@@ -135,7 +135,7 @@ const getPublicActivity = async (req, res, next) => {
 // @access  Public
 const registerParticipantPublic = async (req, res, next) => {
   const activityId = req.params.id;
-  const { name, type, institution_code, project_title, team_members, project_url, department, level, year, advisors } = req.body;
+  const { name, type, institution_code, institution_name, project_title, team_members, project_url, department, level, year, advisors } = req.body;
   const file = req.file;
 
   try {
@@ -163,9 +163,17 @@ const registerParticipantPublic = async (req, res, next) => {
     }
 
     const compType = activity.competition_type;
-    if (compType === 'out_institution' && !institution_code) {
-      res.status(400);
-      throw new Error('กรุณาระบุรหัสวิทยาลัย/สังกัดสถาบัน');
+    const regConfig = loginConfig.reg_config || {};
+    
+    if (compType === 'out_institution') {
+      if (!institution_code) {
+        res.status(400);
+        throw new Error('กรุณาระบุรหัสวิทยาลัย/สังกัดสถาบัน');
+      }
+      if (regConfig.show_institution !== false && !institution_name) {
+        res.status(400);
+        throw new Error('กรุณาระบุชื่อสถานศึกษา');
+      }
     }
 
     // Process attachment URL if uploaded
@@ -175,12 +183,13 @@ const registerParticipantPublic = async (req, res, next) => {
     }
 
     const [result] = await db.query(
-      'INSERT INTO participants (activity_id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year, advisors) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO participants (activity_id, name, type, institution_code, institution_name, project_title, team_members, project_url, attachment_url, department, level, year, advisors) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         activityId, 
         name, 
         type || 'individual', 
         compType === 'out_institution' ? institution_code : null,
+        compType === 'out_institution' ? (institution_name || null) : null,
         project_title || null,
         team_members || null,
         project_url || null,

@@ -160,7 +160,7 @@ const PrintReport = () => {
                     )}
                   </td>
                   {activity.competition_type === 'out_institution' && (
-                    <td style={{ textAlign: 'center' }} className="border border-black p-1.5">{row.institution_code || '-'}</td>
+                    <td style={{ textAlign: 'center' }} className="border border-black p-1.5">{row.institution_name || row.institution_code || '-'}</td>
                   )}
                   <td style={{ textAlign: 'center' }} className="border border-black p-1.5 font-bold">{typeof row.final_score === 'number' ? row.final_score.toFixed(2) : row.final_score}</td>
                 </tr>
@@ -243,8 +243,8 @@ const PrintReport = () => {
                   <div className="mt-3 p-2.5 bg-gray-50 border rounded-lg text-left space-y-1">
                     <div><strong>ชื่อผู้แข่งขัน/ทีม:</strong> {row.name}</div>
                     <div><strong>ประเภท:</strong> {row.type === 'team' ? 'ประเภททีม 👥' : 'ประเภทบุคคล 👤'}</div>
-                    {activity.competition_type === 'out_institution' && row.institution_code && (
-                      <div><strong>สังกัดสถาบัน/วิทยาลัย:</strong> {row.institution_code}</div>
+                    {activity.competition_type === 'out_institution' && (row.institution_name || row.institution_code) && (
+                      <div><strong>สังกัดสถาบัน/วิทยาลัย:</strong> {row.institution_name || row.institution_code}</div>
                     )}
                     {row.project_title && (
                       <div><strong>ชื่อผลงาน:</strong> {row.project_title}</div>
@@ -345,8 +345,8 @@ const PrintReport = () => {
                     <div className="mt-3 p-2.5 bg-gray-50 border rounded-lg text-left space-y-1">
                       <div><strong>ชื่อผู้แข่งขัน/ทีม:</strong> {row.name}</div>
                       <div><strong>ประเภท:</strong> {row.type === 'team' ? 'ประเภททีม 👥' : 'ประเภทบุคคล 👤'}</div>
-                      {activity.competition_type === 'out_institution' && row.institution_code && (
-                        <div><strong>สังกัดสถาบัน/วิทยาลัย:</strong> {row.institution_code}</div>
+                      {activity.competition_type === 'out_institution' && (row.institution_name || row.institution_code) && (
+                        <div><strong>สังกัดสถาบัน/วิทยาลัย:</strong> {row.institution_name || row.institution_code}</div>
                       )}
                       {row.project_title && (
                         <div><strong>ชื่อผลงาน:</strong> {row.project_title}</div>

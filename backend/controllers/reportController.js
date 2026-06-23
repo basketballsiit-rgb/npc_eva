@@ -43,7 +43,7 @@ const getLeaderboard = async (req, res, next) => {
 
     // 2. Fetch all participants for this activity
     const [participants] = await db.query(
-      'SELECT id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year, advisors FROM participants WHERE activity_id = ?',
+      'SELECT id, name, type, institution_code, institution_name, project_title, team_members, project_url, attachment_url, department, level, year, advisors FROM participants WHERE activity_id = ?',
       [activityId]
     );
 
@@ -83,20 +83,26 @@ const getLeaderboard = async (req, res, next) => {
     const headJudge = activityJudges.find(j => parseInt(j.is_head_judge, 10) === 1);
     const headJudgeName = headJudge ? headJudge.fullname : 'Head Judge';
 
-    // 5. Calculate scores for each participant
+    // 5. Generate leaderboard ranking
     const leaderboard = participants.map(part => {
+      // Find all scores submitted for this participant
       const partScores = scores.filter(s => s.participant_id === part.id);
       
-      // Parse individual criteria scores for audit view
-      const judgeBreakdowns = partScores.map(ps => ({
-        judge_id: ps.judge_id,
-        judge_name: ps.judge_name,
-        judge_institution: ps.judge_institution,
-        total_score: parseFloat(ps.total_score),
-        scores: typeof ps.scores === 'string' ? JSON.parse(ps.scores) : ps.scores
-      }));
+      const judgeBreakdowns = assignedJudges.map(j => {
+        const scoreEntry = partScores.find(s => s.judge_id === j.id);
+        return {
+          judge_id: j.id,
+          judge_name: j.fullname,
+          institution_code: j.institution_code,
+          is_head_judge: j.is_head_judge,
+          has_submitted: !!scoreEntry,
+          total_score: scoreEntry ? parseFloat(scoreEntry.total_score) : null,
+          scores: scoreEntry ? (typeof scoreEntry.scores === 'string' ? JSON.parse(scoreEntry.scores) : scoreEntry.scores) : null,
+          submitted_at: scoreEntry ? scoreEntry.submitted_at : null
+        };
+      });
 
-      // Calculate final score based on selected algorithm
+      // Calculate final score using the chosen algorithm
       const finalScore = calculateFinalScore(
         partScores, 
         activity.scoring_algorithm, 
@@ -107,6 +113,7 @@ const getLeaderboard = async (req, res, next) => {
         participant_id: part.id,
         name: part.name,
         institution_code: part.institution_code,
+        institution_name: part.institution_name,
         project_title: part.project_title,
         team_members: part.team_members,
         project_url: part.project_url,
@@ -114,6 +121,7 @@ const getLeaderboard = async (req, res, next) => {
         department: part.department,
         level: part.level,
         year: part.year,
+        advisors: part.advisors,
         final_score: finalScore,
         evaluations_count: partScores.length,
         judges_scores: judgeBreakdowns

@@ -21,6 +21,7 @@ const Login = () => {
     name: '',
     type: 'individual',
     institution_code: '',
+    institution_name: '',
     project_title: '',
     team_members: '',
     project_url: '',
@@ -29,7 +30,7 @@ const Login = () => {
     year: ''
   });
   const [teamMembersList, setTeamMembersList] = useState(['']);
-  const [advisorsList, setAdvisorsList] = useState([]);
+  const [advisorsList, setAdvisorsList] = useState(['']);
   const [attachmentFile, setAttachmentFile] = useState(null);
   const [systemSettings, setSystemSettings] = useState(null);
 
@@ -136,14 +137,27 @@ const Login = () => {
       return;
     }
 
-    if (activityInfo?.competition_type === 'out_institution' && !regForm.institution_code) {
-      Swal.fire({
-        icon: 'error',
-        title: 'ระบุข้อมูลไม่ครบถ้วน',
-        text: 'กรุณาระบุรหัสวิทยาลัย/สังกัดสถาบัน',
-        confirmButtonColor: '#D32F2F'
-      });
-      return;
+    const regConfig = activityInfo?.login_config?.reg_config || {};
+
+    if (activityInfo?.competition_type === 'out_institution') {
+      if (!regForm.institution_code) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ระบุข้อมูลไม่ครบถ้วน',
+          text: 'กรุณาระบุรหัสย่อวิทยาลัย/สังกัดสถาบัน',
+          confirmButtonColor: '#D32F2F'
+        });
+        return;
+      }
+      if (regConfig.show_institution !== false && !regForm.institution_name) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ระบุข้อมูลไม่ครบถ้วน',
+          text: 'กรุณาระบุชื่อสถานศึกษา/วิทยาลัย',
+          confirmButtonColor: '#D32F2F'
+        });
+        return;
+      }
     }
 
     const teamMembersString = regForm.type === 'team'
@@ -160,7 +174,6 @@ const Login = () => {
       return;
     }
 
-    const regConfig = activityInfo?.login_config?.reg_config || {};
     const advisorsString = regConfig.show_advisor !== false
       ? advisorsList.filter(a => a.trim() !== '').join('\n')
       : '';
@@ -172,8 +185,10 @@ const Login = () => {
       formData.append('type', regForm.type);
       if (activityInfo?.competition_type === 'out_institution') {
         formData.append('institution_code', regForm.institution_code);
+        formData.append('institution_name', regConfig.show_institution !== false ? regForm.institution_name : '');
       } else {
         formData.append('institution_code', '');
+        formData.append('institution_name', '');
       }
       formData.append('project_title', regConfig.show_project_title !== false ? regForm.project_title : '');
       formData.append('team_members', teamMembersString);
@@ -208,6 +223,7 @@ const Login = () => {
         name: '',
         type: getDefaultType(),
         institution_code: '',
+        institution_name: '',
         project_title: '',
         team_members: '',
         project_url: '',
@@ -216,7 +232,7 @@ const Login = () => {
         year: ''
       });
       setTeamMembersList(['']);
-      setAdvisorsList([]);
+      setAdvisorsList(['']);
       setAttachmentFile(null);
       setViewMode('login');
     } catch (err) {
@@ -618,19 +634,37 @@ const Login = () => {
                       )}
 
                       {activityInfo?.competition_type === 'out_institution' && (
-                        <div>
-                          <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
-                            รหัสวิทยาลัย / สถาบันต้นสังกัด <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={regForm.institution_code}
-                            onChange={(e) => setRegForm({ ...regForm, institution_code: e.target.value })}
-                            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold"
-                            placeholder="ระบุตัวย่อ เช่น NanTC, CTC"
-                            disabled={loading}
-                          />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {regConfig.show_institution !== false && (
+                            <div>
+                              <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
+                                ชื่อสถานศึกษา / วิทยาลัย <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                value={regForm.institution_name}
+                                onChange={(e) => setRegForm({ ...regForm, institution_name: e.target.value })}
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold bg-white"
+                                placeholder="ระบุชื่อวิทยาลัยเต็ม เช่น วิทยาลัยสารพัดช่างน่าน"
+                                disabled={loading}
+                              />
+                            </div>
+                          )}
+                          <div>
+                            <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
+                              รหัสย่อสถานศึกษา (เช่น NanTC, CTC) <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={regForm.institution_code}
+                              onChange={(e) => setRegForm({ ...regForm, institution_code: e.target.value })}
+                              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-gray-900 text-sm font-semibold bg-white"
+                              placeholder="ระบุตัวย่อ เช่น NanTC, CTC"
+                              disabled={loading}
+                            />
+                          </div>
                         </div>
                       )}
 
@@ -783,6 +817,7 @@ const Login = () => {
                         name: '',
                         type: getDefaultType(),
                         institution_code: '',
+                        institution_name: '',
                         project_title: '',
                         team_members: '',
                         project_url: '',
@@ -790,6 +825,8 @@ const Login = () => {
                         level: '',
                         year: ''
                       });
+                      setTeamMembersList(['']);
+                      setAdvisorsList(['']);
                       setAttachmentFile(null);
                     }}
                     className="w-1/3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg text-xs transition-all"

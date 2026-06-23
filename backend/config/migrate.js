@@ -24,6 +24,10 @@ const runMigrations = async () => {
       await db.query("ALTER TABLE participants ADD COLUMN advisors TEXT NULL");
       console.log('Migration: Added advisors column to participants table.');
     }
+    if (!colNames.includes('institution_name')) {
+      await db.query("ALTER TABLE participants ADD COLUMN institution_name VARCHAR(255) NULL");
+      console.log('Migration: Added institution_name column to participants table.');
+    }
 
     // 2. Double check users table role column contains 'staff'
     const [usersCols] = await db.query("SHOW COLUMNS FROM users LIKE 'role'");

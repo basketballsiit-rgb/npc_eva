@@ -79,6 +79,7 @@ const AdminDashboard = () => {
         show_project_url: true,
         show_attachment: true,
         show_advisor: true,
+        show_institution: true,
         allow_individual: true,
         allow_team: true
       }
@@ -119,9 +120,9 @@ const AdminDashboard = () => {
 
   const [showManageActivityModal, setShowManageActivityModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
-  const [newParticipant, setNewParticipant] = useState({ name: '', type: 'individual', institution_code: '', project_title: '', team_members: '', project_url: '', attachment_url: '', department: '', level: '', year: '' });
+  const [newParticipant, setNewParticipant] = useState({ name: '', type: 'individual', institution_code: '', institution_name: '', project_title: '', team_members: '', project_url: '', attachment_url: '', department: '', level: '', year: '' });
   const [teamMembersList, setTeamMembersList] = useState(['']);
-  const [advisorsList, setAdvisorsList] = useState([]);
+  const [advisorsList, setAdvisorsList] = useState(['']);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [manageTab, setManageTab] = useState('participants'); // 'participants' or 'report'
   const [liveReportData, setLiveReportData] = useState(null);
@@ -303,6 +304,7 @@ const AdminDashboard = () => {
           show_project_url: true,
           show_attachment: true,
           show_advisor: true,
+          show_institution: true,
           allow_individual: true,
           allow_team: true
         }
@@ -336,6 +338,7 @@ const AdminDashboard = () => {
           show_project_url: true,
           show_attachment: true,
           show_advisor: true,
+          show_institution: true,
           allow_individual: true,
           allow_team: true
         }
@@ -1165,6 +1168,7 @@ const AdminDashboard = () => {
       name: newParticipant.name,
       type: newParticipant.type,
       institution_code: selectedActivity.competition_type === 'out_institution' ? newParticipant.institution_code : null,
+      institution_name: selectedActivity.competition_type === 'out_institution' ? newParticipant.institution_name : null,
       project_title: newParticipant.project_title || null,
       team_members: teamMembersString,
       project_url: newParticipant.project_url || null,
@@ -1179,9 +1183,9 @@ const AdminDashboard = () => {
       const result = await api.post(`/api/admin/activities/${selectedActivity.id}/participants`, payload);
       const updatedParts = [...selectedActivity.participants, { id: result.id, ...payload }];
       setSelectedActivity({ ...selectedActivity, participants: updatedParts });
-      setNewParticipant({ name: '', type: 'individual', institution_code: '', project_title: '', team_members: '', project_url: '', attachment_url: '', department: '', level: '', year: '' });
+      setNewParticipant({ name: '', type: 'individual', institution_code: '', institution_name: '', project_title: '', team_members: '', project_url: '', attachment_url: '', department: '', level: '', year: '' });
       setTeamMembersList(['']);
-      setAdvisorsList([]);
+      setAdvisorsList(['']);
       Swal.fire('สำเร็จ!', 'เพิ่มรายชื่อผู้แข่งขันเรียบร้อยแล้ว', 'success');
     } catch (err) {
       Swal.fire('ข้อผิดพลาด', err.message, 'error');
@@ -2900,6 +2904,25 @@ const AdminDashboard = () => {
                                 />
                                 <span>ครูที่ปรึกษา</span>
                               </label>
+
+                              <label className="flex items-center space-x-2 cursor-pointer hover:text-gray-800">
+                                <input
+                                  type="checkbox"
+                                  checked={activityForm.login_config.reg_config?.show_institution !== false}
+                                  onChange={(e) => {
+                                    const reg_config = activityForm.login_config.reg_config || {};
+                                    setActivityForm({
+                                      ...activityForm,
+                                      login_config: {
+                                        ...activityForm.login_config,
+                                        reg_config: { ...reg_config, show_institution: e.target.checked }
+                                      }
+                                    });
+                                  }}
+                                  className="w-3.5 h-3.5 text-primary focus:ring-primary rounded border-gray-300"
+                                />
+                                <span>ชื่อสถานศึกษา / วิทยาลัย</span>
+                              </label>
                             </div>
                           </div>
                         )}
@@ -3456,20 +3479,35 @@ const AdminDashboard = () => {
                       />
                     </div>
                     {selectedActivity.competition_type === 'out_institution' ? (
-                      <div>
-                        <label className="block text-[10px] font-bold text-gray-500 mb-1">
-                          ชื่อสถานศึกษา / สังกัด <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="เช่น วิทยาลัยสารพัดช่างน่าน หรือ วสช.น่าน"
-                          value={newParticipant.institution_code}
-                          onChange={(e) => setNewParticipant({ ...newParticipant, institution_code: e.target.value })}
-                          className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
-                        />
-                        <p className="text-[9px] text-gray-400 mt-0.5">ระบุชื่อหรือรหัสย่อสถานศึกษาที่ผู้เข้าแข่งขันสังกัด</p>
-                      </div>
+                      <>
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 mb-1">
+                            ชื่อสถานศึกษา / สังกัด <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="เช่น วิทยาลัยสารพัดช่างน่าน"
+                            value={newParticipant.institution_name}
+                            onChange={(e) => setNewParticipant({ ...newParticipant, institution_name: e.target.value })}
+                            className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 mb-1">
+                            รหัสย่อสถานศึกษา (COI Check) <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="เช่น NanTC"
+                            value={newParticipant.institution_code}
+                            onChange={(e) => setNewParticipant({ ...newParticipant, institution_code: e.target.value })}
+                            className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                          />
+                          <p className="text-[9px] text-gray-400 mt-0.5">ตัวย่อสถาบันสำหรับตรวจสอบกรรมการทับซ้อน</p>
+                        </div>
+                      </>
                     ) : null}
                   </div>
 
@@ -3626,9 +3664,9 @@ const AdminDashboard = () => {
                               {part.type === 'team' ? 'ทีม' : 'บุคคล'}
                             </span>
                             <span className="text-sm">{part.name}</span>
-                            {selectedActivity.competition_type === 'out_institution' && part.institution_code && (
-                              <span className="text-[10px] bg-gray-200/70 text-gray-600 px-1.5 py-0.5 rounded font-mono font-bold">
-                                {part.institution_code}
+                            {selectedActivity.competition_type === 'out_institution' && (part.institution_name || part.institution_code) && (
+                              <span className="text-[10px] bg-gray-200/70 text-gray-600 px-1.5 py-0.5 rounded font-semibold">
+                                {part.institution_name || part.institution_code}
                               </span>
                             )}
                           </div>

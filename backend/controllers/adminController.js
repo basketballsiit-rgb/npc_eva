@@ -135,7 +135,7 @@ const getActivityById = async (req, res, next) => {
 
     // Fetch participants
     const [participants] = await db.query(
-      'SELECT id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year, advisors FROM participants WHERE activity_id = ?',
+      'SELECT id, name, type, institution_code, institution_name, project_title, team_members, project_url, attachment_url, department, level, year, advisors FROM participants WHERE activity_id = ?',
       [req.params.id]
     );
 
@@ -555,7 +555,7 @@ const resetJudgePassword = async (req, res, next) => {
 // @access  Private/Admin
 const addParticipant = async (req, res, next) => {
   const activityId = req.params.id;
-  const { name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year, advisors } = req.body;
+  const { name, type, institution_code, institution_name, project_title, team_members, project_url, attachment_url, department, level, year, advisors } = req.body;
 
   try {
     if (!name) {
@@ -571,18 +571,19 @@ const addParticipant = async (req, res, next) => {
     }
     const compType = activities[0].competition_type;
 
-    if (compType === 'out_institution' && !institution_code) {
+    if (compType === 'out_institution' && (!institution_code || !institution_name)) {
       res.status(400);
-      throw new Error('Institution code is required for external competitions');
+      throw new Error('Institution code and institution name are required for external competitions');
     }
 
     const [result] = await db.query(
-      'INSERT INTO participants (activity_id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year, advisors) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO participants (activity_id, name, type, institution_code, institution_name, project_title, team_members, project_url, attachment_url, department, level, year, advisors) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         activityId, 
         name, 
         type || 'individual', 
         compType === 'out_institution' ? institution_code : null,
+        compType === 'out_institution' ? institution_name : null,
         project_title || null,
         team_members || null,
         project_url || null,

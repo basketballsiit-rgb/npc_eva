@@ -21,7 +21,7 @@ const getMyTasks = async (req, res, next) => {
     for (const act of activities) {
       // Get participants
       const [participants] = await db.query(
-        'SELECT id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year, advisors FROM participants WHERE activity_id = ?',
+        'SELECT id, name, type, institution_code, institution_name, project_title, team_members, project_url, attachment_url, department, level, year, advisors FROM participants WHERE activity_id = ?',
         [act.id]
       );
 
@@ -38,6 +38,7 @@ const getMyTasks = async (req, res, next) => {
           id: part.id,
           name: part.name,
           institution_code: part.institution_code,
+          institution_name: part.institution_name,
           project_title: part.project_title,
           team_members: part.team_members,
           project_url: part.project_url,
@@ -45,6 +46,7 @@ const getMyTasks = async (req, res, next) => {
           department: part.department,
           level: part.level,
           year: part.year,
+          advisors: part.advisors,
           evaluated: !!submission,
           total_score: submission ? parseFloat(submission.total_score) : null,
           submitted_at: submission ? submission.submitted_at : null

@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS `participants` (
   `attachment_url` VARCHAR(512) DEFAULT NULL,
   `type` ENUM('individual', 'team') NOT NULL DEFAULT 'individual',
   `institution_code` VARCHAR(50) DEFAULT NULL, -- For COI comparison with judges (optional for in-institution)
+  `institution_name` VARCHAR(255) DEFAULT NULL,
   `department` VARCHAR(255) DEFAULT NULL,
   `level` VARCHAR(50) DEFAULT NULL,
   `year` VARCHAR(50) DEFAULT NULL,

@@ -79,6 +79,8 @@ const JudgeDashboard = () => {
               name: p.name,
               type: p.type,
               institution_code: p.institution_code,
+              institution_name: p.institution_name,
+              advisors: p.advisors,
               evaluated: false,
               total_score: null,
               submitted_at: null
@@ -509,8 +511,8 @@ const JudgeDashboard = () => {
                               <div className="flex items-start justify-between">
                                 <span className="text-[10px] text-gray-500 font-bold tracking-wide uppercase flex items-center gap-1">
                                   <span>{part.type === 'team' ? '👥 ทีม' : '👤 บุคคล'}</span>
-                                  {act.competition_type === 'out_institution' && part.institution_code && (
-                                    <span className="bg-gray-100 text-gray-600 px-1 rounded font-mono font-bold">({part.institution_code})</span>
+                                  {act.competition_type === 'out_institution' && (part.institution_name || part.institution_code) && (
+                                    <span className="bg-gray-100 text-gray-600 px-1 rounded font-semibold">({part.institution_name || part.institution_code})</span>
                                   )}
                                 </span>
                                 {part.evaluated ? (
@@ -621,9 +623,9 @@ const JudgeDashboard = () => {
 
                 <div className="border-b pb-4 mb-6">
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {selectedActivity.competition_type === 'out_institution' && selectedParticipant.institution_code && (
-                      <span className="px-2.5 py-0.5 bg-primary-soft text-primary-dark text-xs font-bold rounded-full uppercase block w-fit">
-                        สถาบันผู้แข่ง: {selectedParticipant.institution_code}
+                    {selectedActivity.competition_type === 'out_institution' && (selectedParticipant.institution_name || selectedParticipant.institution_code) && (
+                      <span className="px-2.5 py-0.5 bg-primary-soft text-primary-dark text-xs font-bold rounded-full block w-fit">
+                        สถาบันผู้แข่ง: {selectedParticipant.institution_name || selectedParticipant.institution_code}
                       </span>
                     )}
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
@@ -922,9 +924,9 @@ const JudgeDashboard = () => {
                               <div>
                                 <h5 className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
                                   <span>{row.name}</span>
-                                  {row.institution_code && (
-                                    <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-bold uppercase">
-                                      {row.institution_code}
+                                  {(row.institution_name || row.institution_code) && (
+                                    <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-semibold">
+                                      {row.institution_name || row.institution_code}
                                     </span>
                                   )}
                                 </h5>
