@@ -150,7 +150,12 @@ const PrintReport = () => {
                     )}
                     {row.team_members && (
                       <div className="text-gray-600 font-semibold mt-0.5">
-                        👥 สมาชิก: <span className="font-normal">{row.team_members}</span>
+                        👥 สมาชิก: <span className="font-normal">{row.team_members.split('\n').join(', ')}</span>
+                      </div>
+                    )}
+                    {row.advisors && (
+                      <div className="text-gray-600 font-semibold mt-0.5">
+                        👨‍🏫 ที่ปรึกษา: <span className="font-normal">{row.advisors.split('\n').join(', ')}</span>
                       </div>
                     )}
                   </td>
@@ -245,7 +250,10 @@ const PrintReport = () => {
                       <div><strong>ชื่อผลงาน:</strong> {row.project_title}</div>
                     )}
                     {row.type === 'team' && row.team_members && (
-                      <div><strong>รายชื่อสมาชิกในทีม:</strong> {row.team_members}</div>
+                      <div><strong>รายชื่อสมาชิกในทีม:</strong> {row.team_members.split('\n').join(', ')}</div>
+                    )}
+                    {row.advisors && (
+                      <div><strong>ครูที่ปรึกษา:</strong> {row.advisors.split('\n').join(', ')}</div>
                     )}
                     <div><strong>คะแนนรวมเฉลี่ยสุทธิ:</strong> <span className="font-bold text-primary">{row.final_score.toFixed(2)}</span></div>
                   </div>
@@ -344,7 +352,10 @@ const PrintReport = () => {
                         <div><strong>ชื่อผลงาน:</strong> {row.project_title}</div>
                       )}
                       {row.type === 'team' && row.team_members && (
-                        <div><strong>รายชื่อสมาชิกในทีม:</strong> {row.team_members}</div>
+                        <div><strong>รายชื่อสมาชิกในทีม:</strong> {row.team_members.split('\n').join(', ')}</div>
+                      )}
+                      {row.advisors && (
+                        <div><strong>ครูที่ปรึกษา:</strong> {row.advisors.split('\n').join(', ')}</div>
                       )}
                     </div>
                   </div>

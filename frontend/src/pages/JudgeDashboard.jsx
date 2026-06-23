@@ -533,7 +533,13 @@ const JudgeDashboard = () => {
 
                               {part.type === 'team' && part.team_members && (
                                 <div className="text-[10px] text-gray-500 mt-1 line-clamp-1">
-                                  <span className="font-bold">สมาชิก:</span> {part.team_members}
+                                  <span className="font-bold">สมาชิก:</span> {part.team_members.split('\n').join(', ')}
+                                </div>
+                              )}
+
+                              {part.advisors && (
+                                <div className="text-[10px] text-gray-500 mt-1 line-clamp-1">
+                                  <span className="font-bold">ที่ปรึกษา:</span> {part.advisors.split('\n').join(', ')}
                                 </div>
                               )}
 
@@ -642,7 +648,14 @@ const JudgeDashboard = () => {
                   {selectedParticipant.type === 'team' && selectedParticipant.team_members && (
                     <div className="mt-2 text-xs text-gray-600 flex items-start gap-1 bg-gray-50 border border-gray-150 p-2.5 rounded-lg flex-wrap">
                       <span className="font-bold text-gray-700">👥 รายชื่อสมาชิกในทีม:</span>
-                      <span className="text-gray-800 font-normal">{selectedParticipant.team_members}</span>
+                      <span className="text-gray-800 font-normal">{selectedParticipant.team_members.split('\n').join(', ')}</span>
+                    </div>
+                  )}
+
+                  {selectedParticipant.advisors && (
+                    <div className="mt-2 text-xs text-gray-600 flex items-start gap-1 bg-gray-50 border border-gray-150 p-2.5 rounded-lg flex-wrap">
+                      <span className="font-bold text-gray-700">👨‍🏫 ครูที่ปรึกษา:</span>
+                      <span className="text-gray-800 font-normal">{selectedParticipant.advisors.split('\n').join(', ')}</span>
                     </div>
                   )}
 

@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS `participants` (
   `department` VARCHAR(255) DEFAULT NULL,
   `level` VARCHAR(50) DEFAULT NULL,
   `year` VARCHAR(50) DEFAULT NULL,
+  `advisors` TEXT DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`activity_id`) REFERENCES `activities`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

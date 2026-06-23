@@ -135,7 +135,7 @@ const getActivityById = async (req, res, next) => {
 
     // Fetch participants
     const [participants] = await db.query(
-      'SELECT id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year FROM participants WHERE activity_id = ?',
+      'SELECT id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year, advisors FROM participants WHERE activity_id = ?',
       [req.params.id]
     );
 
@@ -555,7 +555,7 @@ const resetJudgePassword = async (req, res, next) => {
 // @access  Private/Admin
 const addParticipant = async (req, res, next) => {
   const activityId = req.params.id;
-  const { name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year } = req.body;
+  const { name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year, advisors } = req.body;
 
   try {
     if (!name) {
@@ -577,7 +577,7 @@ const addParticipant = async (req, res, next) => {
     }
 
     const [result] = await db.query(
-      'INSERT INTO participants (activity_id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO participants (activity_id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year, advisors) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         activityId, 
         name, 
@@ -589,7 +589,8 @@ const addParticipant = async (req, res, next) => {
         attachment_url || null,
         (type || 'individual') === 'individual' ? (department || null) : null,
         (type || 'individual') === 'individual' ? (level || null) : null,
-        (type || 'individual') === 'individual' ? (year || null) : null
+        (type || 'individual') === 'individual' ? (year || null) : null,
+        advisors || null
       ]
     );
 

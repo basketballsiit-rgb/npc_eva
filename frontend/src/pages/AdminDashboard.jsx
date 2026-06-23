@@ -71,7 +71,15 @@ const AdminDashboard = () => {
       show_title: true,
       show_date: true,
       show_location: true,
-      show_host: true
+      show_host: true,
+      reg_config: {
+        show_department: true,
+        show_level_year: true,
+        show_project_title: true,
+        show_project_url: true,
+        show_attachment: true,
+        show_advisor: true
+      }
     },
     judges: []
   });
@@ -110,6 +118,8 @@ const AdminDashboard = () => {
   const [showManageActivityModal, setShowManageActivityModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [newParticipant, setNewParticipant] = useState({ name: '', type: 'individual', institution_code: '', project_title: '', team_members: '', project_url: '', attachment_url: '', department: '', level: '', year: '' });
+  const [teamMembersList, setTeamMembersList] = useState(['']);
+  const [advisorsList, setAdvisorsList] = useState([]);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [manageTab, setManageTab] = useState('participants'); // 'participants' or 'report'
   const [liveReportData, setLiveReportData] = useState(null);
@@ -283,7 +293,15 @@ const AdminDashboard = () => {
         show_title: true,
         show_date: true,
         show_location: true,
-        show_host: true
+        show_host: true,
+        reg_config: {
+          show_department: true,
+          show_level_year: true,
+          show_project_title: true,
+          show_project_url: true,
+          show_attachment: true,
+          show_advisor: true
+        }
       },
       judges: []
     });
@@ -306,15 +324,31 @@ const AdminDashboard = () => {
         show_title: true,
         show_date: true,
         show_location: true,
-        show_host: true
+        show_host: true,
+        reg_config: {
+          show_department: true,
+          show_level_year: true,
+          show_project_title: true,
+          show_project_url: true,
+          show_attachment: true,
+          show_advisor: true
+        }
       };
       if (fullDetails.login_config) {
         try {
-          parsedConfig = typeof fullDetails.login_config === 'string' 
+          const loadedConfig = typeof fullDetails.login_config === 'string' 
             ? JSON.parse(fullDetails.login_config) 
             : fullDetails.login_config;
+          parsedConfig = {
+            ...parsedConfig,
+            ...loadedConfig,
+            reg_config: {
+              ...parsedConfig.reg_config,
+              ...(loadedConfig.reg_config || {})
+            }
+          };
         } catch (e) {
-          console.error('Failed to parse login_config:', e);
+          console.error(e);
         }
       }
 
@@ -1109,22 +1143,30 @@ const AdminDashboard = () => {
       Swal.fire('คำเตือน', 'กรุณากรอกรหัสสถาบัน/วิทยาลัย', 'warning');
       return;
     }
-    if (newParticipant.type === 'team' && !newParticipant.team_members) {
+    
+    const teamMembersString = newParticipant.type === 'team'
+      ? teamMembersList.filter(m => m.trim() !== '').join('\n')
+      : null;
+
+    if (newParticipant.type === 'team' && !teamMembersString) {
       Swal.fire('คำเตือน', 'กรุณากรอกรายชื่อสมาชิกในทีมอย่างน้อย 1 คน', 'warning');
       return;
     }
+
+    const advisorsString = advisorsList.filter(a => a.trim() !== '').join('\n') || null;
 
     const payload = {
       name: newParticipant.name,
       type: newParticipant.type,
       institution_code: selectedActivity.competition_type === 'out_institution' ? newParticipant.institution_code : null,
       project_title: newParticipant.project_title || null,
-      team_members: newParticipant.type === 'team' ? newParticipant.team_members : null,
+      team_members: teamMembersString,
       project_url: newParticipant.project_url || null,
       attachment_url: newParticipant.attachment_url || null,
       department: newParticipant.department || null,
       level: newParticipant.level || null,
-      year: newParticipant.year || null
+      year: newParticipant.year || null,
+      advisors: advisorsString
     };
 
     try {
@@ -1132,6 +1174,8 @@ const AdminDashboard = () => {
       const updatedParts = [...selectedActivity.participants, { id: result.id, ...payload }];
       setSelectedActivity({ ...selectedActivity, participants: updatedParts });
       setNewParticipant({ name: '', type: 'individual', institution_code: '', project_title: '', team_members: '', project_url: '', attachment_url: '', department: '', level: '', year: '' });
+      setTeamMembersList(['']);
+      setAdvisorsList([]);
       Swal.fire('สำเร็จ!', 'เพิ่มรายชื่อผู้แข่งขันเรียบร้อยแล้ว', 'success');
     } catch (err) {
       Swal.fire('ข้อผิดพลาด', err.message, 'error');
@@ -2685,9 +2729,131 @@ const AdminDashboard = () => {
                           />
                           <span className="text-xs font-bold text-gray-800">เปิดระบบลงทะเบียนผู้เข้าแข่งขันออนไลน์ (Online Registration)</span>
                         </label>
-                        <p className="text-[10px] text-gray-500 leading-normal ml-6">
+                        <p className="text-[10px] text-gray-500 leading-normal ml-6 mb-2">
                           หากเปิดใช้งาน จะมีปุ่มสำหรับให้ผู้เข้าแข่งขันลงทะเบียนสมัครเข้าร่วมการประกวดได้ด้วยตัวเองจากหน้าเข้าสู่ระบบกิจกรรม โดยรองรับทั้งประเภทบุคคลและประเภททีม
                         </p>
+                        {activityForm.login_config.enable_registration && (
+                          <div className="bg-white p-3 rounded-lg border border-gray-200/80 space-y-2.5 ml-6 shadow-sm">
+                            <div className="text-[10px] font-bold text-primary border-b pb-1 mb-1">
+                              ตั้งค่าฟิลด์ที่จะแสดงในฟอร์มลงทะเบียน
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-semibold text-gray-600">
+                              <label className="flex items-center space-x-2 cursor-pointer hover:text-gray-800">
+                                <input
+                                  type="checkbox"
+                                  checked={activityForm.login_config.reg_config?.show_department !== false}
+                                  onChange={(e) => {
+                                    const reg_config = activityForm.login_config.reg_config || {};
+                                    setActivityForm({
+                                      ...activityForm,
+                                      login_config: {
+                                        ...activityForm.login_config,
+                                        reg_config: { ...reg_config, show_department: e.target.checked }
+                                      }
+                                    });
+                                  }}
+                                  className="w-3.5 h-3.5 text-primary focus:ring-primary rounded border-gray-300"
+                                />
+                                <span>แผนกวิชา (เฉพาะบุคคล)</span>
+                              </label>
+
+                              <label className="flex items-center space-x-2 cursor-pointer hover:text-gray-800">
+                                <input
+                                  type="checkbox"
+                                  checked={activityForm.login_config.reg_config?.show_level_year !== false}
+                                  onChange={(e) => {
+                                    const reg_config = activityForm.login_config.reg_config || {};
+                                    setActivityForm({
+                                      ...activityForm,
+                                      login_config: {
+                                        ...activityForm.login_config,
+                                        reg_config: { ...reg_config, show_level_year: e.target.checked }
+                                      }
+                                    });
+                                  }}
+                                  className="w-3.5 h-3.5 text-primary focus:ring-primary rounded border-gray-300"
+                                />
+                                <span>ระดับชั้นและชั้นปี (เฉพาะบุคคล)</span>
+                              </label>
+
+                              <label className="flex items-center space-x-2 cursor-pointer hover:text-gray-800">
+                                <input
+                                  type="checkbox"
+                                  checked={activityForm.login_config.reg_config?.show_project_title !== false}
+                                  onChange={(e) => {
+                                    const reg_config = activityForm.login_config.reg_config || {};
+                                    setActivityForm({
+                                      ...activityForm,
+                                      login_config: {
+                                        ...activityForm.login_config,
+                                        reg_config: { ...reg_config, show_project_title: e.target.checked }
+                                      }
+                                    });
+                                  }}
+                                  className="w-3.5 h-3.5 text-primary focus:ring-primary rounded border-gray-300"
+                                />
+                                <span>ชื่อผลงาน / โครงการ</span>
+                              </label>
+
+                              <label className="flex items-center space-x-2 cursor-pointer hover:text-gray-800">
+                                <input
+                                  type="checkbox"
+                                  checked={activityForm.login_config.reg_config?.show_project_url !== false}
+                                  onChange={(e) => {
+                                    const reg_config = activityForm.login_config.reg_config || {};
+                                    setActivityForm({
+                                      ...activityForm,
+                                      login_config: {
+                                        ...activityForm.login_config,
+                                        reg_config: { ...reg_config, show_project_url: e.target.checked }
+                                      }
+                                    });
+                                  }}
+                                  className="w-3.5 h-3.5 text-primary focus:ring-primary rounded border-gray-300"
+                                />
+                                <span>ลิงก์ผลงานประกวด</span>
+                              </label>
+
+                              <label className="flex items-center space-x-2 cursor-pointer hover:text-gray-800">
+                                <input
+                                  type="checkbox"
+                                  checked={activityForm.login_config.reg_config?.show_attachment !== false}
+                                  onChange={(e) => {
+                                    const reg_config = activityForm.login_config.reg_config || {};
+                                    setActivityForm({
+                                      ...activityForm,
+                                      login_config: {
+                                        ...activityForm.login_config,
+                                        reg_config: { ...reg_config, show_attachment: e.target.checked }
+                                      }
+                                    });
+                                  }}
+                                  className="w-3.5 h-3.5 text-primary focus:ring-primary rounded border-gray-300"
+                                />
+                                <span>ไฟล์เอกสารแนบ</span>
+                              </label>
+
+                              <label className="flex items-center space-x-2 cursor-pointer hover:text-gray-800">
+                                <input
+                                  type="checkbox"
+                                  checked={activityForm.login_config.reg_config?.show_advisor !== false}
+                                  onChange={(e) => {
+                                    const reg_config = activityForm.login_config.reg_config || {};
+                                    setActivityForm({
+                                      ...activityForm,
+                                      login_config: {
+                                        ...activityForm.login_config,
+                                        reg_config: { ...reg_config, show_advisor: e.target.checked }
+                                      }
+                                    });
+                                  }}
+                                  className="w-3.5 h-3.5 text-primary focus:ring-primary rounded border-gray-300"
+                                />
+                                <span>ครูที่ปรึกษา</span>
+                              </label>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <div>
@@ -3259,18 +3425,92 @@ const AdminDashboard = () => {
                   </div>
 
                   {newParticipant.type === 'team' && (
-                    <div>
-                      <label className="block text-[10px] font-bold text-gray-500 mb-1">รายชื่อสมาชิกในทีม (จำเป็นต้องระบุ)</label>
-                      <textarea
-                        required
-                        rows={2}
-                        placeholder="ระบุรายชื่อสมาชิกทีมประเมิน (คั่นด้วยเครื่องหมายจุลภาค , หรือขึ้นบรรทัดใหม่)"
-                        value={newParticipant.team_members}
-                        onChange={(e) => setNewParticipant({ ...newParticipant, team_members: e.target.value })}
-                        className="w-full border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
-                      />
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold text-gray-500">รายชื่อสมาชิกในทีม (จำเป็นต้องระบุ)</label>
+                      <div className="space-y-1.5">
+                        {teamMembersList.map((member, idx) => (
+                          <div key={idx} className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              required={idx === 0}
+                              placeholder={`ระบุชื่อสมาชิกคนที่ ${idx + 1}`}
+                              value={member}
+                              onChange={(e) => {
+                                const newList = [...teamMembersList];
+                                newList[idx] = e.target.value;
+                                setTeamMembersList(newList);
+                              }}
+                              className="flex-1 border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                            />
+                            {teamMembersList.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newList = [...teamMembersList];
+                                  newList.splice(idx, 1);
+                                  setTeamMembersList(newList);
+                                }}
+                                className="text-red-500 hover:text-red-700 px-1 font-bold shrink-0 text-sm"
+                                title="ลบ"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setTeamMembersList([...teamMembersList, ''])}
+                        className="text-[10px] text-primary hover:underline font-bold flex items-center gap-0.5"
+                      >
+                        + เพิ่มสมาชิกในทีม
+                      </button>
                     </div>
                   )}
+
+                  {/* ครูที่ปรึกษา (Advisors) */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-gray-500">ครูที่ปรึกษา (มีมากกว่า 1 คน หรือไม่มีก็ได้)</label>
+                    {advisorsList.length > 0 && (
+                      <div className="space-y-1.5">
+                        {advisorsList.map((advisor, idx) => (
+                          <div key={idx} className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              placeholder={`ระบุชื่อครูที่ปรึกษาคนที่ ${idx + 1}`}
+                              value={advisor}
+                              onChange={(e) => {
+                                const newList = [...advisorsList];
+                                newList[idx] = e.target.value;
+                                setAdvisorsList(newList);
+                              }}
+                              className="flex-1 border rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newList = [...advisorsList];
+                                newList.splice(idx, 1);
+                                setAdvisorsList(newList);
+                              }}
+                              className="text-red-500 hover:text-red-700 px-1 font-bold shrink-0 text-sm"
+                              title="ลบ"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setAdvisorsList([...advisorsList, ''])}
+                      className="text-[10px] text-primary hover:underline font-bold flex items-center gap-0.5"
+                    >
+                      + เพิ่มครูที่ปรึกษา
+                    </button>
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
@@ -3368,7 +3608,16 @@ const AdminDashboard = () => {
                             <div className="text-[11px] text-gray-500 mt-1 flex items-start gap-1 flex-wrap">
                               <span className="font-bold text-gray-600">👥 สมาชิกทีม:</span>
                               <span className="bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-700 font-normal">
-                                {part.team_members}
+                                {part.team_members.split('\n').join(', ')}
+                              </span>
+                            </div>
+                          )}
+
+                          {part.advisors && (
+                            <div className="text-[11px] text-gray-500 mt-1 flex items-start gap-1 flex-wrap">
+                              <span className="font-bold text-gray-600">👨‍🏫 ครูที่ปรึกษา:</span>
+                              <span className="bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-700 font-normal">
+                                {part.advisors.split('\n').join(', ')}
                               </span>
                             </div>
                           )}

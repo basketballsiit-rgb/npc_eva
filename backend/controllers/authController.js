@@ -135,7 +135,7 @@ const getPublicActivity = async (req, res, next) => {
 // @access  Public
 const registerParticipantPublic = async (req, res, next) => {
   const activityId = req.params.id;
-  const { name, type, institution_code, project_title, team_members, project_url, department, level, year } = req.body;
+  const { name, type, institution_code, project_title, team_members, project_url, department, level, year, advisors } = req.body;
   const file = req.file;
 
   try {
@@ -175,7 +175,7 @@ const registerParticipantPublic = async (req, res, next) => {
     }
 
     const [result] = await db.query(
-      'INSERT INTO participants (activity_id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO participants (activity_id, name, type, institution_code, project_title, team_members, project_url, attachment_url, department, level, year, advisors) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         activityId, 
         name, 
@@ -187,7 +187,8 @@ const registerParticipantPublic = async (req, res, next) => {
         attachment_url,
         (type || 'individual') === 'individual' ? (department || null) : null,
         (type || 'individual') === 'individual' ? (level || null) : null,
-        (type || 'individual') === 'individual' ? (year || null) : null
+        (type || 'individual') === 'individual' ? (year || null) : null,
+        advisors || null
       ]
     );
 
