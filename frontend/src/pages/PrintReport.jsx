@@ -361,7 +361,7 @@ const PrintReport = () => {
 
                   {/* Section 2: รายงานคะแนนรายบุคคล */}
                   <div>
-                    <h3 className="font-bold border-b border-black pb-1 mb-2">
+                    <h3 className="print-heading font-bold border-b border-black pb-1 mb-2">
                       ส่วนที่ 2: ใบบันทึกคะแนนดิบรายบุคคล (กรรมการคนที่ {idx + 1})
                     </h3>
                     <div className="border border-gray-300 p-3 rounded-lg bg-gray-50/50">
