@@ -51,7 +51,7 @@
   .print-heading,
   .print-header-details {
     font-family: 'Sarabun', sans-serif !important;
-    font-size: 14pt !important;
+    font-size: 12pt !important;
     font-weight: bold !important;
     margin-bottom: 2px !important;
   }
@@ -62,13 +62,13 @@
   .printable-document div,
   .printable-document td {
     font-family: 'Sarabun', sans-serif !important;
-    font-size: 11pt !important;
+    font-size: 9pt !important;
   }
 
   /* Table headers should remain standard and distinct */
   .printable-document th {
     font-family: 'Sarabun', sans-serif !important;
-    font-size: 12pt !important;
+    font-size: 10pt !important;
     font-weight: bold !important;
   }
 
@@ -159,7 +159,7 @@
 .printable-document h2,
 .print-heading,
 .print-header-details {
-  font-size: 14pt !important;
+  font-size: 12pt !important;
   font-weight: bold !important;
 }
 
@@ -167,11 +167,11 @@
 .printable-document span,
 .printable-document div,
 .printable-document td {
-  font-size: 11pt !important;
+  font-size: 9pt !important;
 }
 
 .printable-document th {
-  font-size: 12pt !important;
+  font-size: 10pt !important;
   font-weight: bold !important;
 }
 
