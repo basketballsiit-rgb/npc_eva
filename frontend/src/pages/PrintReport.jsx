@@ -278,7 +278,7 @@ const PrintReport = () => {
                     </thead>
                     <tbody>
                       {leafCriteria.map(leaf => {
-                        const judgesWithScore = row.judges_scores.filter(js => js.scores[leaf.id] !== undefined);
+                        const judgesWithScore = row.judges_scores.filter(js => js.scores && js.scores[leaf.id] !== undefined);
                         const leafSum = judgesWithScore.reduce((s, js) => s + parseFloat(js.scores[leaf.id]), 0);
                         const leafAvg = judgesWithScore.length > 0 ? (leafSum / judgesWithScore.length).toFixed(2) : '-';
                         return (
@@ -287,7 +287,7 @@ const PrintReport = () => {
                               {leaf.name}
                             </td>
                             {row.judges_scores.map(js => {
-                              const val = js.scores[leaf.id] !== undefined ? js.scores[leaf.id] : '-';
+                              const val = (js.scores && js.scores[leaf.id] !== undefined) ? js.scores[leaf.id] : '-';
                               return (
                                 <td key={js.judge_id} style={{ textAlign: 'center' }} className="border border-black p-1.5 font-bold">
                                   {val}
@@ -308,13 +308,13 @@ const PrintReport = () => {
                         <td style={{ textAlign: 'left' }} className="border border-black p-1.5 text-xs font-bold">คะแนนรวมสุทธิ (Total Score)</td>
                         {row.judges_scores.map(js => (
                           <td key={js.judge_id} style={{ textAlign: 'center' }} className="border border-black p-1.5 text-xs font-bold">
-                            {js.total_score.toFixed(2)}
+                            {js.total_score !== null ? js.total_score.toFixed(2) : '-'}
                           </td>
                         ))}
                         <td style={{ textAlign: 'center' }} className="border border-black p-1.5 text-xs font-bold bg-gray-50">
                           {(() => {
                             let sum = 0;
-                            row.judges_scores.forEach(js => { sum += js.total_score; });
+                            row.judges_scores.forEach(js => { if (js.total_score !== null) sum += js.total_score; });
                             return sum.toFixed(2);
                           })()}
                         </td>
@@ -379,7 +379,7 @@ const PrintReport = () => {
                         </thead>
                         <tbody>
                           {leafCriteria.map(leaf => {
-                            const val = js.scores[leaf.id] !== undefined ? js.scores[leaf.id] : '-';
+                            const val = (js.scores && js.scores[leaf.id] !== undefined) ? js.scores[leaf.id] : '-';
                             return (
                               <tr key={leaf.id}>
                                 <td style={{ textAlign: 'left' }} className="border border-black p-1.5">{leaf.name}</td>
@@ -389,7 +389,7 @@ const PrintReport = () => {
                           })}
                           <tr className="font-bold bg-gray-50">
                             <td style={{ textAlign: 'left' }} className="border border-black p-1.5 font-bold">รวมคะแนน (ดิบ) สุทธิ</td>
-                            <td style={{ textAlign: 'center' }} className="border border-black p-1.5 font-black">{js.total_score.toFixed(2)}</td>
+                            <td style={{ textAlign: 'center' }} className="border border-black p-1.5 font-black">{js.total_score !== null ? js.total_score.toFixed(2) : '-'}</td>
                           </tr>
                         </tbody>
                       </table>

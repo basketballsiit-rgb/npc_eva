@@ -2215,7 +2215,7 @@ const AdminDashboard = () => {
                               </div>
                             </div>
 
-                            {row.judges_scores.length > 0 ? (
+                            {row.judges_scores.some(js => js.has_submitted) ? (
                               <div className="overflow-x-auto rounded-xl border border-gray-200 bg-gray-50/50 p-4">
                                 <table className="min-w-full text-left text-xs font-sans">
                                   <thead>
@@ -2237,7 +2237,7 @@ const AdminDashboard = () => {
                                         ? JSON.parse(selectedLiveReportActivity.criteria)
                                         : selectedLiveReportActivity.criteria;
                                       return getLeafNodes(parsedCriteria).map(leaf => {
-                                        const judgesWithScore = row.judges_scores.filter(js => js.scores[leaf.id] !== undefined);
+                                        const judgesWithScore = row.judges_scores.filter(js => js.scores && js.scores[leaf.id] !== undefined);
                                         const leafSum = judgesWithScore.reduce((s, js) => s + parseFloat(js.scores[leaf.id]), 0);
                                         const leafAvg = judgesWithScore.length > 0 ? (leafSum / judgesWithScore.length).toFixed(2) : '-';
                                         return (
@@ -2246,7 +2246,7 @@ const AdminDashboard = () => {
                                               {leaf.name}
                                             </td>
                                             {row.judges_scores.map(js => {
-                                              const val = js.scores[leaf.id] !== undefined ? js.scores[leaf.id] : '-';
+                                              const val = (js.scores && js.scores[leaf.id] !== undefined) ? js.scores[leaf.id] : '-';
                                               return (
                                                 <td key={js.judge_id} className="py-3 px-3 text-center font-mono font-bold text-gray-600">
                                                   {val}
@@ -3851,7 +3851,7 @@ const AdminDashboard = () => {
                             </div>
                           </div>
 
-                          {row.judges_scores.length > 0 ? (
+                          {row.judges_scores.some(js => js.has_submitted) ? (
                             <div className="overflow-x-auto rounded-lg border border-gray-150 bg-gray-50/50 p-2">
                               <table className="min-w-full text-left text-xs font-sans">
                                 <thead>
@@ -3873,7 +3873,7 @@ const AdminDashboard = () => {
                                       ? JSON.parse(selectedActivity.criteria)
                                       : selectedActivity.criteria;
                                     return getLeafNodes(parsedCriteria).map(leaf => {
-                                      const judgesWithScore = row.judges_scores.filter(js => js.scores[leaf.id] !== undefined);
+                                      const judgesWithScore = row.judges_scores.filter(js => js.scores && js.scores[leaf.id] !== undefined);
                                       const leafSum = judgesWithScore.reduce((s, js) => s + parseFloat(js.scores[leaf.id]), 0);
                                       const leafAvg = judgesWithScore.length > 0 ? (leafSum / judgesWithScore.length).toFixed(2) : '-';
                                       return (
@@ -3882,7 +3882,7 @@ const AdminDashboard = () => {
                                             {leaf.name}
                                           </td>
                                           {row.judges_scores.map(js => {
-                                            const val = js.scores[leaf.id] !== undefined ? js.scores[leaf.id] : '-';
+                                            const val = (js.scores && js.scores[leaf.id] !== undefined) ? js.scores[leaf.id] : '-';
                                             return (
                                               <td key={js.judge_id} className="py-2 px-2 text-center font-mono font-bold text-gray-600">
                                                 {val}
@@ -3905,13 +3905,13 @@ const AdminDashboard = () => {
                                     <td className="py-2.5 px-2">คะแนนรวมสุทธิ (Total Score)</td>
                                     {row.judges_scores.map(js => (
                                       <td key={js.judge_id} className="py-2.5 px-2 text-center font-mono font-black">
-                                        {js.total_score.toFixed(2)}
+                                        {js.total_score !== null ? js.total_score.toFixed(2) : '-'}
                                       </td>
                                     ))}
                                     <td className="py-2.5 px-2 text-center font-mono font-black bg-gray-100/30">
                                       {(() => {
                                         let sum = 0;
-                                        row.judges_scores.forEach(js => { sum += js.total_score; });
+                                        row.judges_scores.forEach(js => { if (js.total_score !== null) sum += js.total_score; });
                                         return sum.toFixed(2);
                                       })()}
                                     </td>
