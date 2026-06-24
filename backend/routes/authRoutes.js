@@ -16,11 +16,11 @@ router.get('/debug-tasks', async (req, res) => {
     const judgeId = req.query.judgeId;
     const name = req.query.name;
     if (name) {
-      const [judges] = await db.query("SELECT id, username, fullname FROM users WHERE fullname LIKE ?", [`%${name}%`]);
+      const [judges] = await db.query("SELECT id, username, fullname, role, status, institution_code FROM users WHERE fullname LIKE ?", [`%${name}%`]);
       return res.json({ search: name, results: judges });
     }
     if (!judgeId) {
-      const [judges] = await db.query("SELECT id, username, fullname FROM users WHERE role = 'judge'");
+      const [judges] = await db.query("SELECT id, username, fullname, role, status FROM users");
       return res.json({ error: 'Missing judgeId query param', available_judges: judges });
     }
 
