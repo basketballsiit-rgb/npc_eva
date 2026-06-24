@@ -47,11 +47,37 @@ router.get('/debug-tasks', async (req, res) => {
         [act.id, judgeId]
       );
 
+      // Map participants with submission status
+      const participantStatusList = participants.map(part => {
+        const submission = submittedScores.find(s => s.participant_id === part.id);
+        return {
+          id: part.id,
+          name: part.name,
+          institution_code: part.institution_code,
+          institution_name: part.institution_name,
+          project_title: part.project_title,
+          team_members: part.team_members,
+          project_url: part.project_url,
+          attachment_url: part.attachment_url,
+          department: part.department,
+          level: part.level,
+          year: part.year,
+          advisors: part.advisors,
+          evaluated: !!submission,
+          total_score: submission ? parseFloat(submission.total_score) : null,
+          submitted_at: submission ? submission.submitted_at : null
+        };
+      });
+
       tasks.push({
         id: act.id,
         title: act.title,
-        participantsCount: participants.length,
-        submittedScoresCount: submittedScores.length
+        description: act.description,
+        status: act.status,
+        scoring_algorithm: act.scoring_algorithm,
+        criteria: typeof act.criteria === 'string' ? JSON.parse(act.criteria) : act.criteria,
+        is_head_judge: act.is_head_judge !== null && act.is_head_judge !== undefined ? parseInt(act.is_head_judge, 10) : 0,
+        participants: participantStatusList
       });
     }
 
