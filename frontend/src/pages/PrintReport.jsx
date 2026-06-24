@@ -120,9 +120,8 @@ const PrintReport = () => {
           <div className="text-center space-y-1 mb-6">
             <h1 className="print-heading text-lg font-bold uppercase leading-none">รายงานผลคะแนนการตัดสินการแข่งขันอย่างเป็นทางการ</h1>
             <h2 className="print-heading text-base font-bold leading-none">{activity.title}</h2>
-            <p>หน่วยงานเจ้าภาพตัดสิน: {activity.host_organization || system_settings?.institution_name || 'วิทยาลัยสารพัดช่างน่าน'}</p>
-            <p>สถานที่จัดการประเมินแข่งขัน: {activity.location || 'อาคารอเนกประสงค์'}</p>
-
+            <p className="print-header-details">หน่วยงานเจ้าภาพตัดสิน: {activity.host_organization || system_settings?.institution_name || 'วิทยาลัยสารพัดช่างน่าน'}</p>
+            <p className="print-header-details">สถานที่จัดการประเมินแข่งขัน: {activity.location || 'อาคารอเนกประสงค์'}</p>
           </div>
 
           {/* Competition Data Table */}
