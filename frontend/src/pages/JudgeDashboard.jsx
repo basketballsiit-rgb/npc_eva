@@ -119,10 +119,10 @@ const JudgeDashboard = () => {
         Swal.fire({
           icon: 'error',
           title: 'ข้อผิดพลาด',
-          text: 'ไม่สามารถโหลดข้อมูลกิจกรรมการประเมินได้',
+          text: `ไม่สามารถโหลดข้อมูลกิจกรรมการประเมินได้ (${err.message || err})`,
           confirmButtonColor: '#4A2C6D'
         }).then(() => {
-          if (user.role === 'admin') {
+          if (user?.role === 'admin') {
             navigate('/admin');
           } else {
             navigate('/judge');
