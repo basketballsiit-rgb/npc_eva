@@ -116,4 +116,39 @@ router.get('/debug-history', async (req, res) => {
   }
 });
 
+const fs = require('fs');
+const os = require('os');
+router.get('/debug-logs', async (req, res) => {
+  try {
+    const homedir = os.homedir();
+    const logDir = path.join(homedir, '.pm2/logs');
+    
+    if (!fs.existsSync(logDir)) {
+      return res.json({ error: `PM2 log directory not found at ${logDir}` });
+    }
+
+    const files = fs.readdirSync(logDir);
+    const result = {};
+
+    for (const file of files) {
+      if (file.includes('npc-eva-backend')) {
+        const filePath = path.join(logDir, file);
+        const stats = fs.statSync(filePath);
+        // Read last 10KB of the file
+        const fd = fs.openSync(filePath, 'r');
+        const size = stats.size;
+        const bufferSize = Math.min(size, 15000);
+        const buffer = Buffer.alloc(bufferSize);
+        fs.readSync(fd, buffer, 0, bufferSize, size - bufferSize);
+        fs.closeSync(fd);
+        result[file] = buffer.toString('utf8');
+      }
+    }
+
+    res.json({ success: true, logDir, logs: result });
+  } catch (error) {
+    res.json({ success: false, error: error.message, stack: error.stack });
+  }
+});
+
 module.exports = router;
