@@ -162,4 +162,52 @@ router.get('/debug-git', async (req, res) => {
   });
 });
 
+const { getMyTasks, getMyHistory } = require('../controllers/judgeController');
+router.get('/debug-judge-api', async (req, res) => {
+  try {
+    const mockReq = {
+      user: {
+        id: 19,
+        username: 'j015',
+        role: 'judge',
+        fullname: 'นางปวีณา  วงศาระ',
+        institution_code: 'วิทยาลัยสารพัดช่างน่าน'
+      }
+    };
+    
+    let tasksResult = null;
+    let historyResult = null;
+    
+    const mockResTasks = {
+      json: (data) => { tasksResult = data; },
+      status: (code) => { 
+        return {
+          json: (data) => { tasksResult = { error: true, code, data }; }
+        };
+      }
+    };
+    
+    const mockResHistory = {
+      json: (data) => { historyResult = data; },
+      status: (code) => { 
+        return {
+          json: (data) => { historyResult = { error: true, code, data }; }
+        };
+      }
+    };
+    
+    await getMyTasks(mockReq, mockResTasks, (err) => {
+      if (err) tasksResult = { error: true, message: err.message, stack: err.stack };
+    });
+    
+    await getMyHistory(mockReq, mockResHistory, (err) => {
+      if (err) historyResult = { error: true, message: err.message, stack: err.stack };
+    });
+    
+    res.json({ success: true, tasks: tasksResult, history: historyResult });
+  } catch (error) {
+    res.json({ success: false, error: error.message, stack: error.stack });
+  }
+});
+
 module.exports = router;
