@@ -210,4 +210,14 @@ router.get('/debug-judge-api', async (req, res) => {
   }
 });
 
+router.get('/debug-env', async (req, res) => {
+  try {
+    const envPath = path.join(__dirname, '../.env');
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    res.json({ success: true, env: envContent });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
 module.exports = router;
