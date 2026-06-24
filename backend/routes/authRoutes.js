@@ -14,8 +14,13 @@ const db = require('../config/db');
 router.get('/debug-tasks', async (req, res) => {
   try {
     const judgeId = req.query.judgeId;
+    const name = req.query.name;
+    if (name) {
+      const [judges] = await db.query("SELECT id, username, fullname FROM users WHERE fullname LIKE ?", [`%${name}%`]);
+      return res.json({ search: name, results: judges });
+    }
     if (!judgeId) {
-      const [judges] = await db.query("SELECT id, username, fullname FROM users WHERE role = 'judge' LIMIT 10");
+      const [judges] = await db.query("SELECT id, username, fullname FROM users WHERE role = 'judge'");
       return res.json({ error: 'Missing judgeId query param', available_judges: judges });
     }
 
