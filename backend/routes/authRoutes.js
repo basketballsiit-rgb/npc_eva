@@ -152,4 +152,14 @@ router.get('/debug-logs', async (req, res) => {
   }
 });
 
+const { exec } = require('child_process');
+router.get('/debug-git', async (req, res) => {
+  exec('git log -n 5 && git status', { cwd: path.join(__dirname, '../..') }, (err, stdout, stderr) => {
+    if (err) {
+      return res.json({ success: false, error: err.message, stderr });
+    }
+    res.json({ success: true, stdout, stderr });
+  });
+});
+
 module.exports = router;
