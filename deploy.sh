@@ -28,6 +28,7 @@ else
   echo "Starting backend via PM2..."
   pm2 start server.js --name npc-eva-backend
 fi
+pm2 save || true
 
 echo "=== 2. Deploying Frontend ==="
 cd ../frontend
