@@ -17,7 +17,8 @@ import {
   LogOut, LayoutDashboard, Trophy, Award, Users, BookOpen, Plus, 
   Trash2, Copy, Edit3, Settings, ShieldAlert, Key, UserPlus, 
   UserCheck, UserX, Printer, CheckCircle, Clock, Link,
-  Upload, Loader2, Shield, Calendar, MapPin, User, BarChart3, QrCode
+  Upload, Loader2, Shield, Calendar, MapPin, User, BarChart3, QrCode,
+  ExternalLink, Paperclip
 } from 'lucide-react';
 import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import { createRoot as createReactRoot } from 'react-dom/client';
@@ -1499,7 +1500,7 @@ const AdminDashboard = () => {
   const renderDashboardCharts = () => {
     if (!stats || !stats.liveRankings || stats.liveRankings.length === 0) {
       return (
-        <div className="bg-white rounded-xl shadow-md p-8 text-center text-gray-500">
+        <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-8 text-center text-stone-500 text-sm">
           ไม่พบการแข่งขันที่มีสถานะกำลังดำเนินงาน (Active) อยู่ในขณะนี้ กรุณาเปิดสถานะการแข่งขันเพื่อติดตามอันดับคะแนน
         </div>
       );
@@ -1515,10 +1516,10 @@ const AdminDashboard = () => {
           {
             label: 'คะแนนสรุปสุดท้าย',
             data: dataValues,
-            backgroundColor: 'rgba(74, 44, 109, 0.75)',
-            borderColor: 'rgb(74, 44, 109)',
+            backgroundColor: 'rgba(74, 44, 109, 0.82)',
+            borderColor: '#4A2C6D',
             borderWidth: 1,
-            borderRadius: 6,
+            borderRadius: 4,
           }
         ]
       };
@@ -1531,54 +1532,56 @@ const AdminDashboard = () => {
           legend: { display: false },
           title: {
             display: true,
-            text: `ตารางคะแนน: ${comp.title} (การคิดคะแนน: ${comp.scoring_algorithm.toUpperCase().replace('_', ' ')})`,
-            font: { size: 16, weight: 'bold', family: 'Kanit' },
-            color: '#4A2C6D'
+            text: `ตารางคะแนน: ${comp.title} (${comp.scoring_algorithm.replace('_', ' ')})`,
+            font: { size: 14, weight: '600', family: 'Kanit' },
+            color: '#1C1917'
           }
         },
         scales: {
           x: {
             beginAtZero: true,
-            grid: { color: '#E5E7EB' }
+            grid: { color: '#E7E5E4' },
+            ticks: { color: '#57534E' }
           },
           y: {
-            grid: { display: false }
+            grid: { display: false },
+            ticks: { color: '#1C1917' }
           }
         }
       };
 
       return (
-        <div key={comp.activity_id} className="bg-white rounded-xl shadow-md p-6 hover-scale mb-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div key={comp.activity_id} className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-6 mb-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 h-64">
             <Bar data={chartData} options={chartOptions} />
           </div>
           <div className="flex flex-col justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-primary mb-3 font-sans">อันดับคะแนนสด (Standings)</h3>
-              <div className="space-y-2 overflow-y-auto max-h-48 pr-2">
+              <h3 className="text-base font-semibold text-stone-900 mb-3">อันดับคะแนนสด (Standings)</h3>
+              <div className="space-y-2 overflow-y-auto max-h-48 pr-1">
                 {comp.rankings.map((part, idx) => (
-                  <div key={part.id} className="flex justify-between items-center p-2 rounded-lg bg-gray-50 border border-gray-100">
-                    <span className="text-sm font-medium truncate w-40">
-                      {idx + 1}. {part.name} <span className="text-xs text-gray-500">({part.institution_code})</span>
+                  <div key={part.id} className="flex justify-between items-center px-3 py-2 rounded-lg bg-stone-50 border border-stone-200/70">
+                    <span className="text-sm font-medium text-stone-800 truncate w-40 tabular-nums">
+                      {idx + 1}. {part.name} <span className="text-xs text-stone-500">({part.institution_code})</span>
                     </span>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs px-2 py-0.5 rounded bg-primary-soft text-primary-dark font-medium">
-                        ประเมินแล้ว {part.evaluations_submitted} ท่าน
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs px-2 py-0.5 rounded bg-stone-200/70 text-stone-700 font-medium tabular-nums">
+                        {part.evaluations_submitted} ท่าน
                       </span>
-                      <span className="text-sm font-bold text-accent">{part.score}</span>
+                      <span className="text-sm font-semibold text-primary tabular-nums">{part.score}</span>
                     </div>
                   </div>
                 ))}
                 {comp.rankings.length === 0 && (
-                  <div className="text-xs text-gray-500 text-center py-4">ยังไม่มีผู้เข้าร่วมแข่งขันในรายการนี้</div>
+                  <div className="text-xs text-stone-500 text-center py-4">ยังไม่มีผู้เข้าร่วมแข่งขันในรายการนี้</div>
                 )}
               </div>
             </div>
             <button
               onClick={() => window.open(`${import.meta.env.BASE_URL}print-report/${comp.activity_id}`, '_blank')}
-              className="mt-4 py-2.5 bg-info hover:bg-info-dark text-white rounded-lg flex items-center justify-center text-sm font-semibold transition-all shadow"
+              className="mt-4 py-2.5 px-4 bg-white hover:bg-stone-50 text-stone-800 border border-stone-300 rounded-lg flex items-center justify-center text-sm font-medium transition-colors"
             >
-              <Printer className="w-4 h-4 mr-2" /> พิมพ์รายงานอย่างเป็นทางการ (A4)
+              <Printer className="w-4 h-4 mr-2 text-stone-500" strokeWidth={1.75} /> พิมพ์รายงานอย่างเป็นทางการ (A4)
             </button>
           </div>
         </div>
@@ -1587,147 +1590,163 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#F7F6F3] text-stone-900 font-sans flex flex-col md:flex-row selection:bg-primary/15 selection:text-primary-dark">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-primary-dark text-white p-6 flex flex-col justify-between shrink-0 no-print">
+      <aside className="w-full md:w-64 bg-[#1E142D] text-white p-5 flex flex-col justify-between shrink-0 no-print border-b md:border-b-0 md:border-r border-white/10">
         <div>
-          <div className="flex items-center space-x-3 mb-8">
-            <Award className="w-8 h-8 text-accent-light" />
-            <div>
-              <h1 className="text-lg font-bold">NPC_Evaluate</h1>
-              <p className="text-xs text-primary-soft">ผู้ดูแลระบบ (Admin)</p>
+          <div className="flex items-center gap-3 mb-8 px-1">
+            {systemSettings.institution_logo ? (
+              <img
+                src={getUploadUrl(systemSettings.institution_logo)}
+                alt={systemSettings.institution_name}
+                className="w-9 h-9 object-contain rounded-lg bg-white p-1 shrink-0"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+                <Shield className="w-4 h-4 text-white/90" strokeWidth={1.75} />
+              </div>
+            )}
+            <div className="min-w-0">
+              <h1 className="text-base font-semibold tracking-tight text-white truncate">NPC_Evaluate</h1>
+              <p className="text-xs text-white/60">ผู้ดูแลระบบ (Admin)</p>
             </div>
           </div>
 
-          <nav className="space-y-2">
+          <nav className="space-y-1">
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm transition-all ${
-                activeTab === 'dashboard' ? 'bg-primary text-white font-semibold shadow-md' : 'text-primary-soft hover:bg-primary/20'
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                activeTab === 'dashboard' ? 'bg-white/12 text-white font-medium border border-white/10' : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
-              <LayoutDashboard className="w-5 h-5 shrink-0" />
+              <LayoutDashboard className="w-4 h-4 shrink-0" strokeWidth={1.75} />
               <span className="whitespace-nowrap">ติดตามผลสด (Live)</span>
             </button>
             <button
               onClick={() => setActiveTab('activities')}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm transition-all ${
-                activeTab === 'activities' ? 'bg-primary text-white font-semibold shadow-md' : 'text-primary-soft hover:bg-primary/20'
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                activeTab === 'activities' ? 'bg-white/12 text-white font-medium border border-white/10' : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
-              <Trophy className="w-5 h-5 shrink-0" />
+              <Trophy className="w-4 h-4 shrink-0" strokeWidth={1.75} />
               <span className="whitespace-nowrap">จัดการการแข่งขัน</span>
             </button>
             <button
               onClick={() => setActiveTab('judges')}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm transition-all ${
-                activeTab === 'judges' ? 'bg-primary text-white font-semibold shadow-md' : 'text-primary-soft hover:bg-primary/20'
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                activeTab === 'judges' ? 'bg-white/12 text-white font-medium border border-white/10' : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
-              <Users className="w-5 h-5 shrink-0" />
+              <Users className="w-4 h-4 shrink-0" strokeWidth={1.75} />
               <span className="whitespace-nowrap">จัดการกรรมการประเมิน</span>
             </button>
             <button
               onClick={() => setActiveTab('live_report')}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm transition-all ${
-                activeTab === 'live_report' ? 'bg-primary text-white font-semibold shadow-md' : 'text-primary-soft hover:bg-primary/20'
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                activeTab === 'live_report' ? 'bg-white/12 text-white font-medium border border-white/10' : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
-              <BarChart3 className="w-5 h-5 shrink-0" />
+              <BarChart3 className="w-4 h-4 shrink-0" strokeWidth={1.75} />
               <span className="whitespace-nowrap">รายงานผลคะแนนเรียลไทม์</span>
             </button>
             <button
               onClick={() => setActiveTab('settings')}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm transition-all ${
-                activeTab === 'settings' ? 'bg-primary text-white font-semibold shadow-md' : 'text-primary-soft hover:bg-primary/20'
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                activeTab === 'settings' ? 'bg-white/12 text-white font-medium border border-white/10' : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
-              <Settings className="w-5 h-5 shrink-0" />
+              <Settings className="w-4 h-4 shrink-0" strokeWidth={1.75} />
               <span className="whitespace-nowrap">ตั้งค่าระบบทั่วไป</span>
             </button>
             {user?.role === 'admin' && (
               <button
                 onClick={() => setActiveTab('staff')}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm transition-all ${
-                  activeTab === 'staff' ? 'bg-primary text-white font-semibold shadow-md' : 'text-primary-soft hover:bg-primary/20'
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                  activeTab === 'staff' ? 'bg-white/12 text-white font-medium border border-white/10' : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
-                <ShieldAlert className="w-5 h-5 shrink-0" />
+                <ShieldAlert className="w-4 h-4 shrink-0" strokeWidth={1.75} />
                 <span className="whitespace-nowrap">จัดการเจ้าหน้าที่</span>
               </button>
             )}
           </nav>
         </div>
 
-        <div className="pt-6 border-t border-primary/30 mt-6">
-          <div className="text-xs text-primary-soft truncate mb-3">แอดมิน: {user?.fullname}</div>
+        <div className="pt-5 border-t border-white/10 mt-6">
+          <div className="text-xs text-white/60 truncate mb-3 px-1">แอดมิน: {user?.fullname}</div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 py-2.5 bg-danger hover:bg-danger-dark text-white rounded-lg text-sm font-semibold transition-all"
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-white/10 hover:bg-danger text-white/90 hover:text-white border border-white/10 hover:border-danger rounded-lg text-sm font-medium transition-colors"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-4 h-4" strokeWidth={1.75} />
             <span>ออกจากระบบ</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-6 md:p-10 overflow-y-auto">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-4 border-b border-gray-200">
+      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-stone-200">
           <div>
-            <h2 className="text-2xl font-bold text-primary-dark">
+            <h2 className="text-xl md:text-2xl font-semibold text-stone-900 tracking-tight">
               {activeTab === 'dashboard' && 'แดชบอร์ดติดตามผลแข่งขัน'}
               {activeTab === 'activities' && 'การจัดการกิจกรรมการแข่งขัน'}
               {activeTab === 'judges' && 'การดูแลและตั้งค่ากรรมการ'}
-              {activeTab === 'live_report' && 'รายงานผลคะแนนเรียลไทม์ (เต็มจอ)'}
+              {activeTab === 'live_report' && 'รายงานผลคะแนนเรียลไทม์'}
               {activeTab === 'settings' && 'การตั้งค่าระบบและตราโลโก้'}
               {activeTab === 'staff' && 'การจัดการเจ้าหน้าที่ดูแลระบบ'}
             </h2>
-            <p className="text-sm text-gray-500 mt-1">วิทยาลัยสารพัดช่างน่าน (Nan Polytechnic College)</p>
+            <p className="text-sm text-stone-500 mt-0.5">{systemSettings.institution_name || 'วิทยาลัยสารพัดช่างน่าน'}</p>
           </div>
-          <div className="mt-4 md:mt-0 text-sm font-semibold px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center">
-            <span className="w-2.5 h-2.5 bg-green-500 rounded-full mr-2.5 animate-pulse"></span>
-            เชื่อมต่อกับฐานข้อมูลหลักแล้ว
+          <div className="mt-3 md:mt-0 text-xs font-medium text-stone-600 px-3 py-1.5 bg-white rounded-lg border border-stone-200/90 flex items-center gap-2">
+            <span className="w-2 h-2 bg-emerald-600 rounded-full shrink-0"></span>
+            <span>เชื่อมต่อกับฐานข้อมูลหลักแล้ว</span>
           </div>
         </header>
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-200 border-t-primary"></div>
           </div>
         ) : (
           <>
             {/* 1. DASHBOARD TAB */}
             {activeTab === 'dashboard' && stats && (
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {/* Stats Tiles */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-primary flex items-center justify-between hover-scale">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-5 flex items-center justify-between">
                     <div>
-                      <div className="text-xs text-gray-500 uppercase font-bold">การแข่งขันทั้งหมด</div>
-                      <div className="text-3xl font-extrabold mt-1 text-primary-dark">{stats.activitiesCount}</div>
+                      <div className="text-xs text-stone-500 font-medium">การแข่งขันทั้งหมด</div>
+                      <div className="text-2xl font-semibold mt-1 text-stone-900 tabular-nums">{stats.activitiesCount}</div>
                     </div>
-                    <Trophy className="w-10 h-10 text-primary-light" />
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Trophy className="w-5 h-5" strokeWidth={1.75} />
+                    </div>
                   </div>
-                  <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-info flex items-center justify-between hover-scale">
+                  <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-5 flex items-center justify-between">
                     <div>
-                      <div className="text-xs text-gray-500 uppercase font-bold">กรรมการประเมิน</div>
-                      <div className="text-3xl font-extrabold mt-1 text-info-dark">{stats.judgesCount}</div>
+                      <div className="text-xs text-stone-500 font-medium">กรรมการประเมิน</div>
+                      <div className="text-2xl font-semibold mt-1 text-stone-900 tabular-nums">{stats.judgesCount}</div>
                     </div>
-                    <Users className="w-10 h-10 text-info-light" />
+                    <div className="w-10 h-10 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center shrink-0">
+                      <Users className="w-5 h-5" strokeWidth={1.75} />
+                    </div>
                   </div>
-                  <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-accent flex items-center justify-between hover-scale">
+                  <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-5 flex items-center justify-between">
                     <div>
-                      <div className="text-xs text-gray-500 uppercase font-bold">ผู้แข่ง / ทีมผู้แข่งขัน</div>
-                      <div className="text-3xl font-extrabold mt-1 text-accent-dark">{stats.participantsCount}</div>
+                      <div className="text-xs text-stone-500 font-medium">ผู้แข่ง / ทีมผู้แข่งขัน</div>
+                      <div className="text-2xl font-semibold mt-1 text-stone-900 tabular-nums">{stats.participantsCount}</div>
                     </div>
-                    <BookOpen className="w-10 h-10 text-accent-light" />
+                    <div className="w-10 h-10 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center shrink-0">
+                      <BookOpen className="w-5 h-5" strokeWidth={1.75} />
+                    </div>
                   </div>
                 </div>
 
                 {/* Charts Area */}
                 <div>
-                  <h3 className="text-lg font-bold text-primary-dark mb-4">รายงานอันดับผลคะแนนเรียลไทม์</h3>
+                  <h3 className="text-base font-semibold text-stone-900 mb-3">รายงานอันดับผลคะแนนเรียลไทม์</h3>
                   {renderDashboardCharts()}
                 </div>
               </div>
@@ -1735,102 +1754,102 @@ const AdminDashboard = () => {
 
             {/* 2. ACTIVITIES TAB */}
             {activeTab === 'activities' && (
-              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-primary-dark">รายการกิจกรรมทั้งหมดในระบบ</h3>
+              <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-6">
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="text-base font-semibold text-stone-900">รายการกิจกรรมทั้งหมดในระบบ</h3>
                   <button
                     onClick={handleOpenCreateActivity}
-                    className="py-2.5 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center text-sm font-semibold transition-all shadow"
+                    className="py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center text-sm font-medium transition-colors"
                   >
-                    <Plus className="w-4 h-4 mr-2" /> สร้างรายการแข่งขันใหม่
+                    <Plus className="w-4 h-4 mr-1.5" strokeWidth={1.75} /> สร้างรายการแข่งขันใหม่
                   </button>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-stone-200">
+                    <thead className="bg-stone-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">กิจกรรมแข่งขัน</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">ช่วงเวลากิจกรรม</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">หลักเกณฑ์คำนวณ</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">กรรมการ / ผู้แข่ง</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">สถานะ</th>
-                        <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">การจัดการ</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">กิจกรรมแข่งขัน</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">ช่วงเวลากิจกรรม</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">หลักเกณฑ์คำนวณ</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">กรรมการ / ผู้แข่ง</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">สถานะ</th>
+                        <th className="px-5 py-3 text-center text-xs font-medium text-stone-500">การจัดการ</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200 text-sm">
+                    <tbody className="bg-white divide-y divide-stone-100 text-sm">
                       {activities.map((act) => (
-                        <tr key={act.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">
-                            <div className="font-bold text-gray-900">{act.title}</div>
-                            <div className="text-xs text-gray-500 truncate w-64">{act.description}</div>
+                        <tr key={act.id} className="hover:bg-stone-50/70 transition-colors">
+                          <td className="px-5 py-3.5">
+                            <div className="font-medium text-stone-900">{act.title}</div>
+                            <div className="text-xs text-stone-500 truncate w-64">{act.description}</div>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="text-xs text-gray-900 font-medium">เริ่ม: {new Date(act.start_date).toLocaleString()}</div>
-                            <div className="text-xs text-gray-500">สิ้นสุด: {new Date(act.end_date).toLocaleString()}</div>
+                          <td className="px-5 py-3.5 tabular-nums">
+                            <div className="text-xs text-stone-800">เริ่ม: {new Date(act.start_date).toLocaleString()}</div>
+                            <div className="text-xs text-stone-500">สิ้นสุด: {new Date(act.end_date).toLocaleString()}</div>
                           </td>
-                          <td className="px-6 py-4 capitalize font-semibold text-xs text-gray-700">
+                          <td className="px-5 py-3.5 text-xs font-medium text-stone-700">
                             {act.scoring_algorithm === 'standard_average' && 'ค่าเฉลี่ยปกติ'}
                             {act.scoring_algorithm === 'coi_prevention' && 'ป้องกันผลประโยชน์ทับซ้อน (COI)'}
                             {act.scoring_algorithm === 'trimmed_mean' && 'ค่าเฉลี่ยตัดหัวท้าย (Trimmed)'}
                           </td>
-                          <td className="px-6 py-4 text-xs font-medium">
-                            <div>กรรมการประเมิน: <span className="text-primary font-bold">{act.judge_count}</span> ท่าน</div>
-                            <div>ทีมแข่งขัน: <span className="text-info font-bold">{act.participant_count}</span> ทีม</div>
+                          <td className="px-5 py-3.5 text-xs text-stone-600 tabular-nums">
+                            <div>กรรมการประเมิน: <span className="text-stone-900 font-semibold">{act.judge_count}</span> ท่าน</div>
+                            <div>ทีมแข่งขัน: <span className="text-stone-900 font-semibold">{act.participant_count}</span> ทีม</div>
                           </td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                              act.status === 'Active' ? 'bg-green-100 text-green-800' :
-                              act.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
-                              act.status === 'Completed' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                          <td className="px-5 py-3.5">
+                            <span className={`px-2.5 py-0.5 rounded-md text-xs font-medium ${
+                              act.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/70' :
+                              act.status === 'Draft' ? 'bg-amber-50 text-amber-700 border border-amber-200/70' :
+                              act.status === 'Completed' ? 'bg-sky-50 text-sky-700 border border-sky-200/70' : 'bg-stone-100 text-stone-700 border border-stone-200'
                             }`}>
                               {act.status === 'Active' ? 'ดำเนินงาน' :
                                act.status === 'Draft' ? 'ร่าง' :
                                act.status === 'Completed' ? 'เสร็จสิ้น' : 'เก็บถาวร'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-center space-x-2">
+                          <td className="px-5 py-3.5 text-center whitespace-nowrap">
                             <button
                               onClick={() => handleOpenManageActivity(act)}
                               title="จัดการทีมและกรรมการประเมินผล"
-                              className="p-2 text-info hover:bg-info/10 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-sky-700 hover:bg-sky-50 rounded-lg transition-colors"
                             >
-                              <Settings className="w-4 h-4" />
+                              <Settings className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                             <button
                               onClick={() => handleOpenEditActivity(act)}
                               title="แก้ไขรายละเอียด"
-                              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                             <button
                               onClick={() => handleCloneActivity(act.id)}
                               title="คัดลอกกิจกรรม"
-                              className="p-2 text-accent hover:bg-accent/10 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
                             >
-                              <Copy className="w-4 h-4" />
+                              <Copy className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                             <button
                               onClick={() => handleCopyJudgeLink(act.id)}
                               title="คัดลอกลิงก์สำหรับกรรมการ"
-                              className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
                             >
-                              <Link className="w-4 h-4" />
+                              <Link className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                             <button
                               onClick={() => handleShowQRCode(act)}
                               title="แสดง QR Code สำหรับลงทะเบียน"
-                              className="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                             >
-                              <QrCode className="w-4 h-4" />
+                              <QrCode className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                             <button
                               onClick={() => handleDeleteActivity(act)}
                               title="ลบกิจกรรมถาวร"
-                              className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                           </td>
                         </tr>
@@ -1843,77 +1862,77 @@ const AdminDashboard = () => {
 
             {/* 3. JUDGES TAB */}
             {activeTab === 'judges' && (
-              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-primary-dark">ฐานข้อมูลรายชื่อกรรมการประเมิน</h3>
+              <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-6">
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="text-base font-semibold text-stone-900">ฐานข้อมูลรายชื่อกรรมการประเมิน</h3>
                   <button
                     onClick={() => setShowJudgeModal(true)}
-                    className="py-2.5 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center text-sm font-semibold transition-all shadow"
+                    className="py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center text-sm font-medium transition-colors"
                   >
-                    <UserPlus className="w-4 h-4 mr-2" /> เพิ่มรายชื่อกรรมการใหม่
+                    <UserPlus className="w-4 h-4 mr-1.5" strokeWidth={1.75} /> เพิ่มรายชื่อกรรมการใหม่
                   </button>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-stone-200">
+                    <thead className="bg-stone-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">ชื่อ-นามสกุลจริง</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">ชื่อผู้ใช้งาน (Username)</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">สังกัด / สถาบัน</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">ประเมินแล้ว</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">สถานะการทำงาน</th>
-                        <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">การจัดการ</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">ชื่อ-นามสกุลจริง</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">ชื่อผู้ใช้งาน (Username)</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">สังกัด / สถาบัน</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">ประเมินแล้ว</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">สถานะการทำงาน</th>
+                        <th className="px-5 py-3 text-center text-xs font-medium text-stone-500">การจัดการ</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200 text-sm">
+                    <tbody className="bg-white divide-y divide-stone-100 text-sm">
                       {judges.map((jd) => (
-                        <tr key={jd.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 font-bold text-gray-900">{jd.fullname}</td>
-                          <td className="px-6 py-4 font-mono text-xs">{jd.username}</td>
-                          <td className="px-6 py-4 font-medium text-gray-600">{jd.institution_code}</td>
-                          <td className="px-6 py-4">
-                            <span className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded font-bold">
-                              ประเมินแล้ว {jd.submission_count} ครั้ง
+                        <tr key={jd.id} className="hover:bg-stone-50/70 transition-colors">
+                          <td className="px-5 py-3.5 font-medium text-stone-900">{jd.fullname}</td>
+                          <td className="px-5 py-3.5 font-mono text-xs text-stone-600">{jd.username}</td>
+                          <td className="px-5 py-3.5 text-stone-600">{jd.institution_code}</td>
+                          <td className="px-5 py-3.5">
+                            <span className="text-xs px-2 py-0.5 bg-stone-100 text-stone-700 rounded-md font-medium tabular-nums">
+                              {jd.submission_count} ครั้ง
                             </span>
                           </td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2.5 py-0.5 rounded text-xs font-bold ${
-                              jd.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          <td className="px-5 py-3.5">
+                            <span className={`px-2.5 py-0.5 rounded-md text-xs font-medium ${
+                              jd.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/70' : 'bg-red-50 text-red-700 border border-red-200/70'
                             }`}>
                               {jd.status === 'active' ? 'เปิดใช้งาน' : 'ระงับใช้งาน'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-center space-x-2">
+                          <td className="px-5 py-3.5 text-center whitespace-nowrap">
                             <button
                               onClick={() => handleOpenEditJudge(jd)}
                               title="แก้ไขข้อมูลกรรมการ"
-                              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                             <button
                               onClick={() => handleToggleJudgeStatus(jd)}
                               title={jd.status === 'active' ? 'ปิดการเข้าใช้งานระบบของกรรมการ' : 'เปิดการใช้งานบัญชี'}
-                              className={`p-2 rounded-lg transition-all ${
-                                jd.status === 'active' ? 'text-danger hover:bg-danger/10' : 'text-info hover:bg-info/10'
+                              className={`p-2 rounded-lg transition-colors ${
+                                jd.status === 'active' ? 'text-stone-500 hover:text-danger hover:bg-danger/10' : 'text-stone-500 hover:text-sky-700 hover:bg-sky-50'
                               }`}
                             >
-                              {jd.status === 'active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                              {jd.status === 'active' ? <UserX className="w-4 h-4" strokeWidth={1.75} /> : <UserCheck className="w-4 h-4" strokeWidth={1.75} />}
                             </button>
                             <button
                               onClick={() => handleOpenResetPassword(jd)}
                               title="ตั้งค่ารหัสผ่านใหม่"
-                              className="p-2 text-accent hover:bg-accent/10 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
                             >
-                              <Key className="w-4 h-4" />
+                              <Key className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                             <button
                               onClick={() => handleDeleteJudge(jd)}
                               title="ลบรายชื่อกรรมการ"
-                              className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                           </td>
                         </tr>
@@ -1926,12 +1945,12 @@ const AdminDashboard = () => {
 
             {/* 4. SETTINGS TAB */}
             {activeTab === 'settings' && (
-              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 max-w-2xl hover-scale transition-all">
-                <h3 className="text-lg font-bold text-primary-dark mb-6">ตั้งค่าข้อมูลสถานศึกษาหลัก</h3>
-                <form onSubmit={handleSaveSettings} className="space-y-6">
+              <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-6 max-w-2xl">
+                <h3 className="text-base font-semibold text-stone-900 mb-5">ตั้งค่าข้อมูลสถานศึกษาหลัก</h3>
+                <form onSubmit={handleSaveSettings} className="space-y-5">
                   {/* Institution Name */}
                   <div>
-                    <label className="block text-xs font-bold uppercase text-gray-600 mb-2 font-sans">
+                    <label className="block text-xs font-medium text-stone-600 mb-1.5">
                       ชื่อสถานศึกษา (สถาบัน)
                     </label>
                     <input
@@ -1940,45 +1959,45 @@ const AdminDashboard = () => {
                       placeholder="ระบุชื่อสถานศึกษา เช่น วิทยาลัยสารพัดช่างน่าน"
                       value={systemSettings.institution_name}
                       onChange={(e) => setSystemSettings({ ...systemSettings, institution_name: e.target.value })}
-                      className="w-full border rounded-lg p-2.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+                      className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-900 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-colors"
                     />
                   </div>
 
                   {/* Institution Logo */}
                   <div>
-                    <label className="block text-xs font-bold uppercase text-gray-600 mb-2 font-sans">
+                    <label className="block text-xs font-medium text-stone-600 mb-1.5">
                       โลโก้สถานศึกษาถาวร
                     </label>
-                    <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-xl bg-gray-50/50">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border border-stone-200 rounded-xl bg-stone-50/70">
                       {systemSettings.institution_logo ? (
                         <div className="relative group shrink-0">
                           <img
                             src={getUploadUrl(systemSettings.institution_logo)}
                             alt="Institution Logo"
-                            className="w-24 h-24 object-contain rounded-lg border bg-white p-1"
+                            className="w-24 h-24 object-contain rounded-lg border border-stone-200 bg-white p-1.5"
                           />
                           <button
                             type="button"
                             onClick={() => setSystemSettings({ ...systemSettings, institution_logo: '' })}
-                            className="absolute -top-2 -right-2 p-1 bg-red-100 hover:bg-red-200 text-red-500 rounded-full transition-all border border-red-200 shadow-sm"
+                            className="absolute -top-2 -right-2 p-1 bg-white hover:bg-red-50 text-red-600 rounded-full transition-colors border border-stone-200 shadow-sm"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5" strokeWidth={1.75} />
                           </button>
                         </div>
                       ) : (
-                        <div className="w-24 h-24 rounded-lg border border-dashed border-gray-300 flex items-center justify-center bg-white shrink-0 text-gray-400">
-                          <Shield className="w-8 h-8" />
+                        <div className="w-24 h-24 rounded-lg border border-dashed border-stone-300 flex items-center justify-center bg-white shrink-0 text-stone-400">
+                          <Shield className="w-8 h-8" strokeWidth={1.5} />
                         </div>
                       )}
                       
                       <div className="flex-1 space-y-2">
                         {uploadingSettingLogo ? (
-                          <div className="h-10 border border-dashed rounded-lg flex items-center justify-center space-x-2 bg-white px-4">
+                          <div className="h-10 border border-dashed border-stone-300 rounded-lg flex items-center justify-center space-x-2 bg-white px-4">
                             <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                            <span className="text-xs text-gray-400 font-semibold">กำลังอัปโหลด...</span>
+                            <span className="text-xs text-stone-500 font-medium">กำลังอัปโหลด...</span>
                           </div>
                         ) : (
-                          <div className="border border-dashed border-gray-300 hover:border-primary bg-white rounded-lg p-2.5 flex items-center justify-center cursor-pointer transition-all relative h-10">
+                          <div className="border border-dashed border-stone-300 hover:border-primary bg-white rounded-lg p-2.5 flex items-center justify-center cursor-pointer transition-colors relative h-10">
                             <input
                               type="file"
                               accept="image/*"
@@ -1986,22 +2005,22 @@ const AdminDashboard = () => {
                               className="absolute inset-0 opacity-0 cursor-pointer"
                             />
                             <div className="flex items-center space-x-2">
-                              <Upload className="w-4 h-4 text-gray-400" />
-                              <span className="text-xs font-semibold text-gray-500">เลือกไฟล์ตราสัญลักษณ์สถานศึกษา</span>
+                              <Upload className="w-4 h-4 text-stone-400" strokeWidth={1.75} />
+                              <span className="text-xs font-medium text-stone-600">เลือกไฟล์ตราสัญลักษณ์สถานศึกษา</span>
                             </div>
                           </div>
                         )}
-                        <p className="text-[10px] text-gray-400">ไฟล์นามสกุล .jpeg, .jpg, .png, .gif, .webp ขนาดไฟล์ไม่เกิน 5MB</p>
+                        <p className="text-[11px] text-stone-400">ไฟล์นามสกุล .jpeg, .jpg, .png, .gif, .webp ขนาดไฟล์ไม่เกิน 5MB</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-end border-t pt-4">
+                  <div className="flex justify-end border-t border-stone-100 pt-4">
                     <button
                       type="submit"
-                      className="py-2.5 px-6 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-semibold transition-all shadow-md flex items-center"
+                      className="py-2.5 px-5 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium transition-colors flex items-center"
                     >
-                      <CheckCircle className="w-4 h-4 mr-2" /> บันทึกการตั้งค่าถาวร
+                      <CheckCircle className="w-4 h-4 mr-2" strokeWidth={1.75} /> บันทึกการตั้งค่าถาวร
                     </button>
                   </div>
                 </form>
@@ -2010,62 +2029,62 @@ const AdminDashboard = () => {
 
             {/* STAFF MANAGEMENT TAB */}
             {activeTab === 'staff' && (
-              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 font-sans">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-primary-dark">รายชื่อเจ้าหน้าที่จัดการกิจกรรม</h3>
+              <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-6 font-sans">
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="text-base font-semibold text-stone-900">รายชื่อเจ้าหน้าที่จัดการกิจกรรม</h3>
                   <button
                     onClick={handleOpenAddStaff}
-                    className="py-2.5 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center text-sm font-semibold transition-all shadow"
+                    className="py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center text-sm font-medium transition-colors"
                   >
-                    <UserPlus className="w-4 h-4 mr-2" /> เพิ่มเจ้าหน้าที่ใหม่
+                    <UserPlus className="w-4 h-4 mr-1.5" strokeWidth={1.75} /> เพิ่มเจ้าหน้าที่ใหม่
                   </button>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-stone-200">
+                    <thead className="bg-stone-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">ชื่อ-นามสกุลจริง</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">ชื่อผู้ใช้งาน (Username)</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">บทบาท</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">สถานะการใช้งาน</th>
-                        <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">การจัดการ</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">ชื่อ-นามสกุลจริง</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">ชื่อผู้ใช้งาน (Username)</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">บทบาท</th>
+                        <th className="px-5 py-3 text-left text-xs font-medium text-stone-500">สถานะการใช้งาน</th>
+                        <th className="px-5 py-3 text-center text-xs font-medium text-stone-500">การจัดการ</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200 text-sm">
+                    <tbody className="bg-white divide-y divide-stone-100 text-sm">
                       {staff.map((st) => (
-                        <tr key={st.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 font-bold text-gray-900">{st.fullname}</td>
-                          <td className="px-6 py-4 font-mono text-xs">{st.username}</td>
-                          <td className="px-6 py-4 font-medium text-gray-600">เจ้าหน้าที่ (Staff)</td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2.5 py-0.5 rounded text-xs font-bold ${
-                              st.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        <tr key={st.id} className="hover:bg-stone-50/70 transition-colors">
+                          <td className="px-5 py-3.5 font-medium text-stone-900">{st.fullname}</td>
+                          <td className="px-5 py-3.5 font-mono text-xs text-stone-600">{st.username}</td>
+                          <td className="px-5 py-3.5 text-stone-600">เจ้าหน้าที่ (Staff)</td>
+                          <td className="px-5 py-3.5">
+                            <span className={`px-2.5 py-0.5 rounded-md text-xs font-medium ${
+                              st.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/70' : 'bg-red-50 text-red-700 border border-red-200/70'
                             }`}>
                               {st.status === 'active' ? 'เปิดใช้งาน' : 'ระงับใช้งาน'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-center space-x-2">
+                          <td className="px-5 py-3.5 text-center whitespace-nowrap">
                             <button
                               onClick={() => handleOpenEditStaff(st)}
                               title="แก้ไขข้อมูลเจ้าหน้าที่"
-                              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                             <button
                               onClick={() => handleDeleteStaff(st)}
                               title="ลบเจ้าหน้าที่"
-                              className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-all"
+                              className="p-2 text-stone-500 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4" strokeWidth={1.75} />
                             </button>
                           </td>
                         </tr>
                       ))}
                       {staff.length === 0 && (
                         <tr>
-                          <td colSpan="5" className="px-6 py-10 text-center text-gray-500">
+                          <td colSpan="5" className="px-6 py-10 text-center text-stone-500">
                             ไม่พบข้อมูลเจ้าหน้าที่ดูแลระบบ
                           </td>
                         </tr>
@@ -2080,23 +2099,23 @@ const AdminDashboard = () => {
             {activeTab === 'live_report' && (
               <div className="space-y-6 font-sans">
                 {/* Selector Header */}
-                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                  <label className="block text-sm font-bold text-gray-700 mb-3">
-                    เลือกกิจกรรมการแข่งขันที่ต้องการดูรายงานผลคะแนนสด:
+                <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-6">
+                  <label className="block text-sm font-medium text-stone-700 mb-2.5">
+                    เลือกกิจกรรมการแข่งขันที่ต้องการดูรายงานผลคะแนนสด
                   </label>
-                  <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <select
                       value={selectedLiveReportActivityId}
                       onChange={(e) => {
                         setSelectedLiveReportActivityId(e.target.value);
                         setLiveReportDataFullscreen(null);
                       }}
-                      className="flex-1 border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none bg-white font-semibold text-gray-700"
+                      className="flex-1 border border-stone-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none bg-white font-medium text-stone-800 transition-colors"
                     >
                       <option value="">-- กรุณาเลือกกิจกรรมการแข่งขัน --</option>
                       {activities.map(act => (
                         <option key={act.id} value={act.id}>
-                          {act.title} [{act.status === 'Active' ? 'กำลังตัดสิน 🟢' : act.status === 'Completed' ? 'เสร็จสิ้น 🔴' : 'แบบร่าง 🟡'}]
+                          {act.title} ({act.status === 'Active' ? 'กำลังตัดสิน' : act.status === 'Completed' ? 'เสร็จสิ้น' : 'แบบร่าง'})
                         </option>
                       ))}
                     </select>
@@ -2105,15 +2124,15 @@ const AdminDashboard = () => {
                         <button
                           type="button"
                           onClick={() => window.open(`${import.meta.env.BASE_URL}print-report/${selectedLiveReportActivityId}`, '_blank')}
-                          className="py-2.5 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-bold flex items-center gap-1.5 transition-all shadow-md shrink-0"
+                          className="py-2.5 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors shrink-0"
                         >
-                          <Printer className="w-4 h-4" />
+                          <Printer className="w-4 h-4" strokeWidth={1.75} />
                           พิมพ์รายงาน (A4)
                         </button>
                         <button
                           type="button"
                           onClick={() => fetchLiveReportFullscreen(selectedLiveReportActivityId)}
-                          className="py-2.5 px-4 bg-white hover:bg-gray-150 text-gray-700 border border-gray-300 rounded-lg text-sm font-bold flex items-center gap-1.5 transition-all shrink-0"
+                          className="py-2.5 px-4 bg-white hover:bg-stone-50 text-stone-700 border border-stone-300 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors shrink-0"
                         >
                           รีเฟรชตอนนี้
                         </button>
@@ -2124,25 +2143,25 @@ const AdminDashboard = () => {
 
                 {/* Report Section */}
                 {!selectedLiveReportActivityId ? (
-                  <div className="bg-white rounded-xl shadow-md p-12 text-center text-gray-500 border border-gray-100">
-                    <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="font-bold text-base">กรุณาเลือกกิจกรรมการแข่งขันด้านบนเพื่อติดตามผลคะแนนเรียลไทม์</p>
+                  <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-12 text-center text-stone-500">
+                    <BarChart3 className="w-12 h-12 text-stone-300 mx-auto mb-3" strokeWidth={1.5} />
+                    <p className="font-medium text-sm">กรุณาเลือกกิจกรรมการแข่งขันด้านบนเพื่อติดตามผลคะแนนเรียลไทม์</p>
                   </div>
                 ) : !liveReportDataFullscreen || !selectedLiveReportActivity ? (
-                  <div className="flex items-center justify-center py-24 bg-white rounded-xl shadow-md border border-gray-100">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                  <div className="flex items-center justify-center py-24 bg-white rounded-xl border border-stone-200/90 shadow-sm">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-stone-200 border-t-primary"></div>
                   </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-5">
                     {/* Status Banner */}
-                    <div className="flex justify-between items-center bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                    <div className="flex flex-wrap justify-between items-center gap-3 bg-emerald-50/80 px-4 py-3 rounded-xl border border-emerald-200/70">
                       <div className="flex items-center gap-2.5">
-                        <span className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span>
-                        <span className="text-sm text-emerald-800 font-bold uppercase tracking-wider">
-                          โหมดการติดตามผลคะแนนสดเรียลไทม์ (อัปเดตอัตโนมัติทุก 5 วินาที)
+                        <span className="w-2.5 h-2.5 bg-emerald-600 rounded-full shrink-0"></span>
+                        <span className="text-sm text-emerald-900 font-medium">
+                          โหมดติดตามผลคะแนนสดเรียลไทม์ (อัปเดตอัตโนมัติทุก 5 วินาที)
                         </span>
                       </div>
-                      <div className="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">
+                      <div className="text-xs bg-white text-emerald-800 border border-emerald-200/80 px-3 py-1 rounded-md font-medium">
                         ประเภทเกณฑ์: {selectedLiveReportActivity.scoring_algorithm === 'standard_average' && 'ค่าเฉลี่ยปกติ'}
                         {selectedLiveReportActivity.scoring_algorithm === 'coi_prevention' && 'ป้องกัน COI'}
                         {selectedLiveReportActivity.scoring_algorithm === 'trimmed_mean' && 'Trimmed Mean'}
@@ -2150,88 +2169,90 @@ const AdminDashboard = () => {
                     </div>
 
                     {/* Competitor Score Cards */}
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       {liveReportDataFullscreen.leaderboard.map((row, index) => {
-                        let rankBadge = "bg-gray-150 text-gray-800";
-                        if (index === 0) rankBadge = "bg-yellow-400 text-white font-bold border border-yellow-500 shadow-sm";
-                        else if (index === 1) rankBadge = "bg-slate-300 text-white font-bold border border-slate-400 shadow-sm";
-                        else if (index === 2) rankBadge = "bg-amber-600 text-white font-bold border border-amber-700 shadow-sm";
+                        let rankBadge = "bg-stone-100 text-stone-700 border border-stone-200";
+                        if (index === 0) rankBadge = "bg-amber-400 text-stone-950 font-semibold border border-amber-500";
+                        else if (index === 1) rankBadge = "bg-stone-300 text-stone-900 font-semibold border border-stone-400";
+                        else if (index === 2) rankBadge = "bg-amber-700 text-white font-semibold border border-amber-800";
 
                         return (
-                          <div key={row.participant_id} className="bg-white border border-gray-100 rounded-xl p-6 shadow-md hover:shadow-lg transition-all">
-                            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b pb-4 mb-4">
+                          <div key={row.participant_id} className="bg-white border border-stone-200/90 rounded-xl p-6 shadow-sm">
+                            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-stone-100 pb-4 mb-4">
                               <div className="flex items-center gap-4">
-                                <span className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-black shrink-0 ${rankBadge}`}>
+                                <span className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-semibold tabular-nums shrink-0 ${rankBadge}`}>
                                   {index + 1}
                                 </span>
                                  <div>
-                                  <h5 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                                  <h5 className="text-base font-semibold text-stone-900 flex items-center gap-2">
                                     <span>{row.name}</span>
                                     {row.institution_code && (
-                                      <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full font-bold uppercase border">
+                                      <span className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-md font-medium border border-stone-200/80">
                                         {row.institution_code}
                                       </span>
                                     )}
                                   </h5>
 
                                   {row.project_title && (
-                                    <div className="text-xs font-semibold text-primary mt-1">
-                                      🏆 ผลงาน: <span className="text-gray-700 font-normal">{row.project_title}</span>
+                                    <div className="text-xs font-medium text-stone-700 mt-1 flex items-center gap-1.5">
+                                      <Trophy className="w-3.5 h-3.5 text-stone-400 shrink-0" strokeWidth={1.75} />
+                                      <span>ผลงาน: {row.project_title}</span>
                                     </div>
                                   )}
 
                                   {row.team_members && (
-                                    <div className="text-xs text-gray-500 mt-1">
-                                      👥 สมาชิกทีม: <span className="text-gray-700 font-normal">{row.team_members}</span>
+                                    <div className="text-xs text-stone-500 mt-1 flex items-center gap-1.5">
+                                      <Users className="w-3.5 h-3.5 text-stone-400 shrink-0" strokeWidth={1.75} />
+                                      <span>สมาชิกทีม: <span className="text-stone-700">{row.team_members}</span></span>
                                     </div>
                                   )}
 
                                   {(row.project_url || row.attachment_url) && (
-                                    <div className="flex items-center gap-2.5 mt-2">
+                                    <div className="flex items-center gap-2 mt-2">
                                       {row.project_url && (
-                                        <a href={row.project_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-info bg-info/5 border border-info/10 px-2 py-0.5 rounded-full font-bold">
-                                          🔗 ลิงก์
+                                        <a href={row.project_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-sky-700 bg-sky-50 border border-sky-200/80 px-2 py-0.5 rounded-md font-medium hover:bg-sky-100 transition-colors">
+                                          <ExternalLink className="w-3 h-3" strokeWidth={1.75} /> ลิงก์
                                         </a>
                                       )}
                                       {row.attachment_url && (
-                                        <a href={getUploadUrl(row.attachment_url)} target="_blank" rel="noopener noreferrer" className="text-[10px] text-success bg-success/5 border border-success/10 px-2 py-0.5 rounded-full font-bold">
-                                          📁 ไฟล์แนบ
+                                        <a href={getUploadUrl(row.attachment_url)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md font-medium hover:bg-emerald-100 transition-colors">
+                                          <Paperclip className="w-3 h-3" strokeWidth={1.75} /> ไฟล์แนบ
                                         </a>
                                       )}
                                     </div>
                                   )}
 
-                                  <p className="text-xs text-gray-500 font-semibold mt-1">
+                                  <p className="text-xs text-stone-500 mt-1.5 tabular-nums">
                                     จำนวนกรรมการที่ประเมินแล้ว: {row.evaluations_count} / {selectedLiveReportActivity.expected_judges || 3} ท่าน
                                   </p>
                                 </div>
                               </div>
 
-                              <div className="flex items-center justify-between sm:justify-end gap-8 bg-primary-soft/10 px-4 py-2 rounded-xl border border-primary/10">
+                              <div className="flex items-center justify-between sm:justify-end gap-8 bg-stone-50 px-4 py-2.5 rounded-lg border border-stone-200/80">
                                 <div className="text-right">
-                                  <span className="text-[10px] text-gray-500 font-bold block uppercase">คะแนนเฉลี่ยรวม</span>
-                                  <span className="text-2xl font-black text-primary">{row.final_score.toFixed(2)}</span>
+                                  <span className="text-xs text-stone-500 font-medium block">คะแนนเฉลี่ยรวม</span>
+                                  <span className="text-2xl font-semibold text-primary tabular-nums">{row.final_score.toFixed(2)}</span>
                                 </div>
                               </div>
                             </div>
 
                             {row.judges_scores.some(js => js.has_submitted) ? (
-                              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+                              <div className="overflow-x-auto rounded-lg border border-stone-200 bg-stone-50/50 p-3">
                                 <table className="min-w-full text-left text-xs font-sans">
                                   <thead>
-                                    <tr className="border-b border-gray-300 text-[10px] text-gray-500 uppercase font-extrabold tracking-wider">
+                                    <tr className="border-b border-stone-200 text-xs text-stone-500 font-medium">
                                       <th className="py-2.5 px-3">หัวข้อการประเมิน</th>
                                       {row.judges_scores.map((js, idx) => (
                                         <th key={js.judge_id} className="py-2.5 px-3 text-center" title={js.judge_name}>
                                           กรรมการท่านที่ {idx + 1}<br/>
-                                          <span className="text-[8px] font-normal truncate max-w-[90px] block mx-auto text-gray-400">({js.judge_name})</span>
+                                          <span className="text-[11px] font-normal truncate max-w-[90px] block mx-auto text-stone-400">({js.judge_name})</span>
                                         </th>
                                       ))}
-                                      <th className="py-2.5 px-3 text-center bg-gray-100/50">คะแนนรวม</th>
+                                      <th className="py-2.5 px-3 text-center bg-stone-100/70">คะแนนรวม</th>
                                       <th className="py-2.5 px-3 text-right">คะแนนเฉลี่ย</th>
                                     </tr>
                                   </thead>
-                                  <tbody className="divide-y divide-gray-200">
+                                  <tbody className="divide-y divide-stone-200/70">
                                     {(() => {
                                       const parsedCriteria = typeof selectedLiveReportActivity.criteria === 'string'
                                         ? JSON.parse(selectedLiveReportActivity.criteria)
@@ -2241,22 +2262,22 @@ const AdminDashboard = () => {
                                         const leafSum = judgesWithScore.reduce((s, js) => s + parseFloat(js.scores[leaf.id]), 0);
                                         const leafAvg = judgesWithScore.length > 0 ? (leafSum / judgesWithScore.length).toFixed(2) : '-';
                                         return (
-                                          <tr key={leaf.id} className="hover:bg-gray-100/50">
-                                            <td className="py-3 px-3 font-bold text-gray-700">
+                                          <tr key={leaf.id} className="hover:bg-stone-100/60 transition-colors">
+                                            <td className="py-2.5 px-3 font-medium text-stone-800">
                                               {leaf.name}
                                             </td>
                                             {row.judges_scores.map(js => {
                                               const val = (js.scores && js.scores[leaf.id] !== undefined) ? js.scores[leaf.id] : '-';
                                               return (
-                                                <td key={js.judge_id} className="py-3 px-3 text-center font-mono font-bold text-gray-600">
+                                                <td key={js.judge_id} className="py-2.5 px-3 text-center font-mono font-medium text-stone-700 tabular-nums">
                                                   {val}
                                                 </td>
                                               );
                                             })}
-                                            <td className="py-3 px-3 text-center font-mono font-bold bg-gray-100/30 text-gray-700">
+                                            <td className="py-2.5 px-3 text-center font-mono font-medium bg-stone-100/50 text-stone-800 tabular-nums">
                                               {leafSum.toFixed(2)}
                                             </td>
-                                            <td className="py-3 px-3 text-right font-mono font-bold text-primary">
+                                            <td className="py-2.5 px-3 text-right font-mono font-semibold text-primary tabular-nums">
                                               {leafAvg}
                                             </td>
                                           </tr>
@@ -2267,7 +2288,7 @@ const AdminDashboard = () => {
                                 </table>
                               </div>
                             ) : (
-                              <div className="p-6 text-center text-gray-400 italic text-xs">
+                              <div className="p-6 text-center text-stone-400 text-xs">
                                 ยังไม่มีผลคะแนนประเมินบันทึกจากกรรมการสำหรับผู้เข้าแข่งขันรายนี้
                               </div>
                             )}
@@ -2275,7 +2296,7 @@ const AdminDashboard = () => {
                         );
                       })}
                       {liveReportDataFullscreen.leaderboard.length === 0 && (
-                        <div className="bg-white rounded-xl shadow-md p-12 text-center text-gray-500 border border-gray-100">
+                        <div className="bg-white rounded-xl border border-stone-200/90 shadow-sm p-12 text-center text-stone-500">
                           ไม่พบผู้เข้าแข่งขันหรือทีมในกิจกรรมการประกวดนี้
                         </div>
                       )}
@@ -2291,7 +2312,7 @@ const AdminDashboard = () => {
       {/* --- ACTIVITY CREATE/EDIT MODAL --- */}
       {showActivityModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto font-sans">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto hover-scale">
+          <div className="bg-white rounded-xl border border-stone-200 shadow-lg w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-primary mb-4 border-b pb-3">
               {isEditingActivity ? 'แก้ไขรายละเอียดเกณฑ์การแข่งขัน' : 'สร้างรายการแข่งขันและกำหนดเกณฑ์คะแนน'}
             </h3>
@@ -2329,7 +2350,7 @@ const AdminDashboard = () => {
               >
                 <span>คณะกรรมการตัดสิน ({activityForm.judges.length})</span>
                 {activityForm.judges.length > 0 && !activityForm.judges.some(j => parseInt(j.is_head_judge, 10) === 1) && (
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shrink-0" title="ยังไม่ได้แต่งตั้งประธานกรรมการ" />
+                  <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" title="ยังไม่ได้แต่งตั้งประธานกรรมการ" />
                 )}
               </button>
               <button
@@ -3337,7 +3358,7 @@ const AdminDashboard = () => {
       {/* --- MANAGE PARTICIPANTS & LIVE REPORT MODAL --- */}
       {showManageActivityModal && selectedActivity && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto font-sans">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto hover-scale transition-all">
+          <div className="bg-white rounded-xl border border-stone-200 shadow-lg w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-start border-b pb-3 mb-4">
               <div>
                 <h3 className="text-xl font-bold text-primary">
@@ -3757,7 +3778,7 @@ const AdminDashboard = () => {
               <div className="space-y-4 font-sans">
                 <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
+                    <span className="w-2 h-2 bg-emerald-600 rounded-full"></span>
                     <span className="text-xs text-gray-600 font-bold uppercase tracking-wider">
                       ติดตามรายงานผลตัดสินเรียลไทม์ (อัปเดตทุก 5 วินาที)
                     </span>
@@ -3959,7 +3980,7 @@ const AdminDashboard = () => {
       {/* --- ADD JUDGE ACCOUNT MODAL --- */}
       {showJudgeModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 font-sans">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 hover-scale">
+          <div className="bg-white rounded-xl border border-stone-200 shadow-lg w-full max-w-md p-6">
             <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">ลงทะเบียนบัญชีกรรมการใหม่</h3>
             <form onSubmit={handleCreateJudge} className="space-y-4">
               <div>
@@ -4048,7 +4069,7 @@ const AdminDashboard = () => {
       {/* --- RESET PASSWORD MODAL --- */}
       {showResetPwdModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 font-sans">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 hover-scale">
+          <div className="bg-white rounded-xl border border-stone-200 shadow-lg w-full max-w-md p-6">
             <h3 className="text-lg font-bold text-primary mb-2 border-b pb-2">เปลี่ยนรหัสผ่านการใช้งาน</h3>
             <p className="text-xs text-gray-500 mb-4">รีเซ็ตรหัสผ่านสำหรับกรรมการท่าน: <strong className="text-gray-800">{resetPwdData.judgeName}</strong></p>
             <form onSubmit={handleResetPassword} className="space-y-4">
@@ -4086,7 +4107,7 @@ const AdminDashboard = () => {
       {/* --- EDIT JUDGE MODAL --- */}
       {showEditJudgeModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 font-sans">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 hover-scale">
+          <div className="bg-white rounded-xl border border-stone-200 shadow-lg w-full max-w-md p-6">
           <h3 className="text-lg font-bold text-primary mb-1 border-b pb-2">แก้ไขข้อมูลกรรมการ</h3>
             <p className="text-xs text-gray-500 mb-4">สามารถแก้ไขชื่อ, ชื่อผู้ใช้งาน (ใช้ล็อคอิน) และสถานศึกษาของกรรมการได้ หากต้องการเปลี่ยนรหัสผ่าน ใช้ปุ่มตั้งรหัสผ่านแยกต่างหาก</p>
             <form onSubmit={handleUpdateJudge} className="space-y-4">
@@ -4148,7 +4169,7 @@ const AdminDashboard = () => {
       {/* --- ADD/EDIT STAFF MODAL --- */}
       {showStaffModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 font-sans">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 hover-scale">
+          <div className="bg-white rounded-xl border border-stone-200 shadow-lg w-full max-w-md p-6">
             <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">
               {isEditingStaff ? 'แก้ไขข้อมูลเจ้าหน้าที่' : 'ลงทะเบียนเจ้าหน้าที่ใหม่'}
             </h3>
